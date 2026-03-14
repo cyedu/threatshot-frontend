@@ -1,21 +1,39 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Shield, ArrowLeft } from 'lucide-react'
+import ThemeToggle from '../ThemeToggle'
 
 export default function LegalLayout({ title, subtitle, lastUpdated, children }) {
+  const navigate = useNavigate()
+
+  const handleBack = () => {
+    if (window.history.state?.idx > 0) navigate(-1)
+    else navigate('/')
+  }
+
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text">
       {/* Nav */}
       <nav className="border-b border-brand-border px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <Shield className="w-5 h-5 text-brand-accent" />
             <span className="font-bold text-base">
               <span className="text-brand-accent">THREAT</span>SHOT
             </span>
-          </Link>
-          <Link to="/" className="flex items-center gap-1.5 text-sm text-brand-muted hover:text-brand-text transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to home
-          </Link>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-1.5 text-sm text-brand-muted hover:text-brand-text transition-colors px-3 py-1.5 rounded-md hover:bg-brand-surface"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -42,9 +60,9 @@ export default function LegalLayout({ title, subtitle, lastUpdated, children }) 
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-muted">
           <span>© {new Date().getFullYear()} MSInfo Services. All rights reserved.</span>
           <div className="flex items-center gap-4">
-            <Link to="/privacy" className="hover:text-brand-accent2 transition-colors">Privacy</Link>
-            <Link to="/terms" className="hover:text-brand-accent2 transition-colors">Terms</Link>
-            <Link to="/contact" className="hover:text-brand-accent2 transition-colors">Contact</Link>
+            <button onClick={() => navigate('/privacy')} className="hover:text-brand-accent2 transition-colors">Privacy</button>
+            <button onClick={() => navigate('/terms')} className="hover:text-brand-accent2 transition-colors">Terms</button>
+            <button onClick={() => navigate('/contact')} className="hover:text-brand-accent2 transition-colors">Contact</button>
           </div>
         </div>
       </footer>

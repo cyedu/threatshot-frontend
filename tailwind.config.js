@@ -5,13 +5,15 @@ export default {
     extend: {
       colors: {
         brand: {
-          bg:      '#0D1117',
-          surface: '#161B22',
-          border:  '#30363D',
+          // These use CSS vars → change automatically with data-theme on <html>
+          bg:      'rgb(var(--brand-bg) / <alpha-value>)',
+          surface: 'rgb(var(--brand-surface) / <alpha-value>)',
+          border:  'rgb(var(--brand-border) / <alpha-value>)',
+          text:    'rgb(var(--brand-text) / <alpha-value>)',
+          muted:   'rgb(var(--brand-muted) / <alpha-value>)',
+          // Fixed — same in both themes
           accent:  '#E63946',
           accent2: '#457B9D',
-          text:    '#E6EDF3',
-          muted:   '#8B949E',
           success: '#2DA44E',
           warning: '#E3B341',
           danger:  '#F85149',

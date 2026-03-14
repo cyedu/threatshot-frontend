@@ -19,6 +19,8 @@ import CVESearch from './pages/cve/CVESearch'
 import BlogAdmin from './pages/admin/blog/BlogAdmin'
 import BlogEditor from './pages/admin/blog/BlogEditor'
 
+import NotFound from './pages/NotFound'
+
 // Coming soon
 import DNSEmailSecurity from './pages/coming-soon/DNSEmailSecurity'
 import SBOMScanner from './pages/coming-soon/SBOMScanner'
@@ -99,6 +101,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Catch-all
-  { path: '*', element: <Navigate to="/" replace /> },
+  // Catch-all — 404
+  { path: '*', element: <NotFound /> },
 ])

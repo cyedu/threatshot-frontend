@@ -42,9 +42,55 @@ const FEATURES = [
 ]
 
 const PLANS = [
-  { name: 'Free', price: '₹0', scans: '10 IOC scans/day', features: ['Threat feed (read-only)', 'IOC scanner', 'Public blog'] },
-  { name: 'Starter', price: '₹999/mo', scans: '100 IOC scans/day', features: ['Everything in Free', 'Bulk IOC upload', 'Email digest', 'API access'] },
-  { name: 'Professional', price: '₹2,999/mo', scans: '500 IOC scans/day', features: ['Everything in Starter', 'PDF reports', 'Priority support', 'Custom feeds'] },
+  {
+    name: 'Free',
+    price: '₹0',
+    scans: '10 IOC scans/day',
+    features: ['Threat feed (read-only)', 'IOC scanner', 'Public blog', 'CVE search'],
+    popular: false,
+    cta: 'Get started',
+    href: '/register',
+  },
+  {
+    name: 'Starter',
+    price: '₹999/mo',
+    scans: '100 IOC scans/day',
+    features: ['Everything in Free', 'Bulk IOC upload', 'Email digest', 'API access'],
+    popular: false,
+    cta: 'Get started',
+    href: '/register',
+  },
+  {
+    name: 'Professional',
+    price: '₹2,999/mo',
+    scans: '500 IOC scans/day',
+    features: [
+      'Everything in Starter',
+      'PDF reports',
+      'Priority support',
+      'Custom feeds',
+      'CERT-IN alerts via email (structured format)',
+    ],
+    popular: true,
+    cta: 'Get started',
+    href: '/register',
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    scans: 'Unlimited access',
+    features: [
+      'Everything in Professional',
+      'SOAR integration',
+      'ITSM integration (Jira, ServiceNow)',
+      'Dedicated account manager',
+      'SLA-backed support',
+      'Custom onboarding',
+    ],
+    popular: false,
+    cta: 'Contact us',
+    href: 'mailto:sales@threatshot.in',
+  },
 ]
 
 export default function Landing() {
@@ -167,44 +213,56 @@ export default function Landing() {
 
       {/* Pricing */}
       <section className="max-w-6xl mx-auto px-6 py-16">
-        <h2 className={`text-2xl font-bold text-center mb-10 ${t.text}`}>Simple, transparent pricing</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {PLANS.map((plan, i) => (
+        <h2 className={`text-2xl font-bold text-center mb-2 ${t.text}`}>Simple, transparent pricing</h2>
+        <p className={`text-center text-sm mb-10 ${t.muted}`}>Scale from free to enterprise — no surprise charges.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {PLANS.map((plan) => (
             <div
               key={plan.name}
-              className={`border rounded-lg p-6 space-y-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
-                i === 1
+              className={`relative flex flex-col border rounded-lg p-6 space-y-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
+                plan.popular
                   ? 'border-brand-accent ring-1 ring-brand-accent hover:shadow-brand-accent/20'
-                  : `${light ? 'border-[#D0D7DE] hover:shadow-[#D0D7DE]/50' : 'border-brand-border hover:shadow-brand-border/50'}`
-              } ${light ? 'bg-white' : 'bg-brand-surface'}`}
+                  : plan.name === 'Enterprise'
+                  ? `${light ? 'border-[#0550AE]/40 bg-[#F0F6FF]' : 'border-brand-accent2/40 bg-brand-accent2/5'}`
+                  : `${light ? 'border-[#D0D7DE] bg-white hover:shadow-[#D0D7DE]/50' : 'border-brand-border bg-brand-surface'}`
+              }`}
             >
-              {i === 1 && (
-                <span className="text-xs bg-brand-accent text-white px-2 py-0.5 rounded-full font-medium">
+              {plan.popular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs bg-brand-accent text-white px-3 py-0.5 rounded-full font-medium whitespace-nowrap">
                   Most popular
+                </span>
+              )}
+              {plan.name === 'Enterprise' && (
+                <span className={`absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-3 py-0.5 rounded-full font-medium whitespace-nowrap ${light ? 'bg-[#0550AE] text-white' : 'bg-brand-accent2 text-white'}`}>
+                  For teams
                 </span>
               )}
               <div>
                 <h3 className={`font-bold text-lg ${t.text}`}>{plan.name}</h3>
-                <p className="text-2xl font-bold text-brand-accent mt-1">{plan.price}</p>
+                <p className={`text-2xl font-bold mt-1 ${plan.name === 'Enterprise' ? 'text-brand-accent2' : 'text-brand-accent'}`}>
+                  {plan.price}
+                </p>
                 <p className={`text-sm ${t.muted}`}>{plan.scans}</p>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2 flex-1">
                 {plan.features.map(f => (
-                  <li key={f} className={`flex items-center gap-2 text-sm ${t.muted}`}>
-                    <CheckCircle className="w-4 h-4 text-brand-success shrink-0" />
+                  <li key={f} className={`flex items-start gap-2 text-sm ${t.muted}`}>
+                    <CheckCircle className={`w-4 h-4 shrink-0 mt-0.5 ${plan.name === 'Enterprise' ? 'text-brand-accent2' : 'text-brand-success'}`} />
                     {f}
                   </li>
                 ))}
               </ul>
               <Link
-                to="/register"
+                to={plan.href}
                 className={`block text-center py-2 rounded-md text-sm font-medium transition-colors ${
-                  i === 1
+                  plan.popular
                     ? 'bg-brand-accent hover:bg-red-700 text-white'
+                    : plan.name === 'Enterprise'
+                    ? `${light ? 'bg-[#0550AE] hover:bg-[#033D8B] text-white' : 'bg-brand-accent2 hover:bg-[#2d5f82] text-white'}`
                     : `border ${light ? 'border-[#D0D7DE] hover:border-brand-accent2' : 'border-brand-border hover:border-brand-accent2'} ${t.muted} hover:text-brand-accent2`
                 }`}
               >
-                Get started
+                {plan.cta}
               </Link>
             </div>
           ))}
@@ -212,18 +270,86 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className={`border-t ${t.footer} px-6 py-8 mt-8`}>
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-brand-accent" />
-            <span><span className="text-brand-accent font-semibold">THREAT</span>SHOT</span>
+      <footer className={`border-t ${t.footer} px-6 py-12 mt-8`}>
+        <div className="max-w-6xl mx-auto">
+          {/* Top row — logo + columns */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
+            {/* Brand */}
+            <div className="col-span-2 sm:col-span-1 space-y-3">
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-brand-accent" />
+                <span className="font-bold">
+                  <span className="text-brand-accent">THREAT</span>
+                  <span className={t.text}>SHOT</span>
+                </span>
+              </div>
+              <p className={`text-xs leading-relaxed ${t.muted}`}>
+                Cyber threat intelligence built for Indian SMEs, NBFCs, and fintech.
+              </p>
+              <p className={`text-xs ${t.muted} italic`}>by MSInfo Services</p>
+            </div>
+
+            {/* Product */}
+            <div className="space-y-3">
+              <h3 className={`text-xs font-semibold uppercase tracking-wide ${t.text}`}>Product</h3>
+              <ul className="space-y-2">
+                {[
+                  { label: 'Threat News', to: '/threat-feed' },
+                  { label: 'IOC Scanner', to: '/login' },
+                  { label: 'CVE Search', to: '/cve' },
+                  { label: 'Intelligence Blog', to: '/blog' },
+                ].map(l => (
+                  <li key={l.to}>
+                    <Link to={l.to} className={`text-xs hover:text-brand-accent2 transition-colors ${t.muted}`}>{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div className="space-y-3">
+              <h3 className={`text-xs font-semibold uppercase tracking-wide ${t.text}`}>Company</h3>
+              <ul className="space-y-2">
+                {[
+                  { label: 'About', to: '/about' },
+                  { label: 'Contact', to: '/contact' },
+                  { label: 'Blog', to: '/blog' },
+                ].map(l => (
+                  <li key={l.to}>
+                    <Link to={l.to} className={`text-xs hover:text-brand-accent2 transition-colors ${t.muted}`}>{l.label}</Link>
+                  </li>
+                ))}
+                <li>
+                  <a href="mailto:sales@threatshot.in" className={`text-xs hover:text-brand-accent2 transition-colors ${t.muted}`}>Enterprise Sales</a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div className="space-y-3">
+              <h3 className={`text-xs font-semibold uppercase tracking-wide ${t.text}`}>Legal</h3>
+              <ul className="space-y-2">
+                {[
+                  { label: 'Privacy Policy', to: '/privacy' },
+                  { label: 'Terms of Service', to: '/terms' },
+                  { label: 'Refund Policy', to: '/refunds' },
+                  { label: 'Cookie Policy', to: '/cookies' },
+                  { label: 'Acceptable Use', to: '/aup' },
+                  { label: 'Security Policy', to: '/security' },
+                ].map(l => (
+                  <li key={l.to}>
+                    <Link to={l.to} className={`text-xs hover:text-brand-accent2 transition-colors ${t.muted}`}>{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div className="flex items-center gap-6">
-            <Link to="/blog" className={`hover:text-brand-accent2 transition-colors ${t.muted}`}>Blog</Link>
-            <Link to="/threat-feed" className={`hover:text-brand-accent2 transition-colors ${t.muted}`}>Threat News</Link>
-            <Link to="/cve" className={`hover:text-brand-accent2 transition-colors ${t.muted}`}>CVE Search</Link>
+
+          {/* Bottom bar */}
+          <div className={`border-t ${light ? 'border-[#D0D7DE]' : 'border-brand-border'} pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${t.muted}`}>
+            <span>© {new Date().getFullYear()} MSInfo Services. All rights reserved.</span>
+            <span className="italic">modernising cyber services</span>
           </div>
-          <p className={t.muted}>© {new Date().getFullYear()} ThreatShot. Built for Indian cyber defenders.</p>
         </div>
       </footer>
     </div>

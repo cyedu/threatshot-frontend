@@ -26,6 +26,18 @@ import NetworkScan from './pages/coming-soon/NetworkScan'
 import AIPentest from './pages/coming-soon/AIPentest'
 import VendorScorecard from './pages/coming-soon/VendorScorecard'
 
+// Legal pages
+import PrivacyPolicy from './pages/legal/PrivacyPolicy'
+import TermsOfService from './pages/legal/TermsOfService'
+import RefundPolicy from './pages/legal/RefundPolicy'
+import CookiePolicy from './pages/legal/CookiePolicy'
+import AcceptableUse from './pages/legal/AcceptableUse'
+import SecurityPolicy from './pages/legal/SecurityPolicy'
+
+// Company pages
+import About from './pages/company/About'
+import Contact from './pages/company/Contact'
+
 function RequireAuth() {
   const token = localStorage.getItem('access_token')
   if (!token) return <Navigate to="/login" replace />
@@ -47,6 +59,18 @@ export const router = createBrowserRouter([
   { path: '/threat-feed', element: <ThreatFeed /> },
   { path: '/blog', element: <BlogList /> },
   { path: '/blog/:slug', element: <BlogPost /> },
+
+  // Legal pages
+  { path: '/privacy', element: <PrivacyPolicy /> },
+  { path: '/terms', element: <TermsOfService /> },
+  { path: '/refunds', element: <RefundPolicy /> },
+  { path: '/cookies', element: <CookiePolicy /> },
+  { path: '/aup', element: <AcceptableUse /> },
+  { path: '/security', element: <SecurityPolicy /> },
+
+  // Company pages
+  { path: '/about', element: <About /> },
+  { path: '/contact', element: <Contact /> },
 
   // Public auth pages (redirect if already logged in)
   {

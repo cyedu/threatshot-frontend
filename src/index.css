@@ -12,6 +12,20 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Light theme overrides — applied to landing page only via data-theme="light" */
+  [data-theme="light"] {
+    --color-bg:      #F6F8FA;
+    --color-surface: #FFFFFF;
+    --color-border:  #D0D7DE;
+    --color-text:    #1F2328;
+    --color-muted:   #656D76;
+  }
+  [data-theme="light"] .lt-bg      { background-color: #F6F8FA; }
+  [data-theme="light"] .lt-surface { background-color: #FFFFFF; }
+  [data-theme="light"] .lt-border  { border-color: #D0D7DE; }
+  [data-theme="light"] .lt-text    { color: #1F2328; }
+  [data-theme="light"] .lt-muted   { color: #656D76; }
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;

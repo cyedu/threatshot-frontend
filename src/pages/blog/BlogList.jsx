@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom'
 import { Clock, Calendar, Tag, ChevronLeft, ChevronRight, Shield } from 'lucide-react'
 import PageWrapper from '../../components/layout/PageWrapper'
 import { Spinner } from '../../components/ui'
-import api from '../../lib/api'
+import axios from 'axios'
+
+const publicApi = axios.create({ baseURL: (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1' })
 import { formatDate } from '../../lib/utils'
 
 export default function BlogList() {
@@ -16,13 +18,13 @@ export default function BlogList() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['blog-list', page, selectedTag],
-    queryFn: () => api.get(`/blog/?${params}`).then(r => r.data),
+    queryFn: () => publicApi.get(`/blog/?${params}`).then(r => r.data),
     keepPreviousData: true,
   })
 
   const { data: tagsData } = useQuery({
     queryKey: ['blog-tags'],
-    queryFn: () => api.get('/blog/tags').then(r => r.data),
+    queryFn: () => publicApi.get('/blog/tags').then(r => r.data),
     staleTime: 300_000,
   })
 

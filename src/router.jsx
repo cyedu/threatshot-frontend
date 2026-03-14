@@ -45,6 +45,8 @@ export const router = createBrowserRouter([
   // Public browsable routes (no auth required — drives SEO)
   { path: '/cve', element: <CVESearch /> },
   { path: '/threat-feed', element: <ThreatFeed /> },
+  { path: '/blog', element: <BlogList /> },
+  { path: '/blog/:slug', element: <BlogPost /> },
 
   // Public auth pages (redirect if already logged in)
   {
@@ -62,8 +64,6 @@ export const router = createBrowserRouter([
     children: [
       { path: '/dashboard', element: <Dashboard /> },
       { path: '/ioc-scanner', element: <IOCScanner /> },
-      { path: '/blog', element: <BlogList /> },
-      { path: '/blog/:slug', element: <BlogPost /> },
       { path: '/admin/blog', element: <BlogAdmin /> },
       { path: '/admin/blog/new', element: <BlogEditor /> },
       { path: '/admin/blog/:id/edit', element: <BlogEditor /> },

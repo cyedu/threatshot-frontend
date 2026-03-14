@@ -5,7 +5,9 @@ import remarkGfm from 'remark-gfm'
 import { ArrowLeft, Calendar, Clock, Shield } from 'lucide-react'
 import PageWrapper from '../../components/layout/PageWrapper'
 import { Spinner } from '../../components/ui'
-import api from '../../lib/api'
+import axios from 'axios'
+
+const publicApi = axios.create({ baseURL: (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1' })
 import { formatDate } from '../../lib/utils'
 
 export default function BlogPost() {
@@ -13,7 +15,7 @@ export default function BlogPost() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['blog-post', slug],
-    queryFn: () => api.get(`/blog/${slug}`).then(r => r.data),
+    queryFn: () => publicApi.get(`/blog/${slug}`).then(r => r.data),
   })
 
   if (isLoading) return (

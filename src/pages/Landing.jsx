@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Shield, Zap, Globe, Lock, TrendingUp, CheckCircle, Sun, Moon } from 'lucide-react'
+import NewsTicker from '../components/NewsTicker'
 
 const FEATURES = [
   {
@@ -155,6 +156,9 @@ export default function Landing() {
           </div>
         </div>
       </nav>
+
+      {/* News ticker */}
+      <NewsTicker light={light} />
 
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-6 py-20 text-center">

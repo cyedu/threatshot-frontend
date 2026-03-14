@@ -26,6 +26,20 @@
   [data-theme="light"] .lt-border  { border-color: #D0D7DE; }
   [data-theme="light"] .lt-text    { color: #1F2328; }
   [data-theme="light"] .lt-muted   { color: #656D76; }
+  /* News ticker scroll animation */
+  @keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-ticker {
+    display: flex;
+    width: max-content;
+    animation: ticker-scroll 40s linear infinite;
+  }
+  .animate-ticker:hover {
+    animation-play-state: paused;
+  }
+
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;

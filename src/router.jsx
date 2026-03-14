@@ -1,0 +1,80 @@
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
+import useAuthStore from './store/authStore'
+
+// Auth pages
+import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
+import ForgotPassword from './pages/auth/ForgotPassword'
+
+// App pages
+import Dashboard from './pages/dashboard/Dashboard'
+import ThreatFeed from './pages/threat-feed/ThreatFeed'
+import IOCScanner from './pages/ioc-scanner/IOCScanner'
+import BlogList from './pages/blog/BlogList'
+import BlogPost from './pages/blog/BlogPost'
+import Landing from './pages/Landing'
+import CVESearch from './pages/cve/CVESearch'
+
+// Admin
+import BlogAdmin from './pages/admin/blog/BlogAdmin'
+import BlogEditor from './pages/admin/blog/BlogEditor'
+
+// Coming soon
+import DNSEmailSecurity from './pages/coming-soon/DNSEmailSecurity'
+import SBOMScanner from './pages/coming-soon/SBOMScanner'
+import NetworkScan from './pages/coming-soon/NetworkScan'
+import AIPentest from './pages/coming-soon/AIPentest'
+import VendorScorecard from './pages/coming-soon/VendorScorecard'
+
+function RequireAuth() {
+  const token = localStorage.getItem('access_token')
+  if (!token) return <Navigate to="/login" replace />
+  return <Outlet />
+}
+
+function RedirectIfAuth() {
+  const token = localStorage.getItem('access_token')
+  if (token) return <Navigate to="/dashboard" replace />
+  return <Outlet />
+}
+
+export const router = createBrowserRouter([
+  // Public landing
+  { path: '/', element: <Landing /> },
+
+  // Public browsable routes (no auth required — drives SEO)
+  { path: '/cve', element: <CVESearch /> },
+  { path: '/threat-feed', element: <ThreatFeed /> },
+
+  // Public auth pages (redirect if already logged in)
+  {
+    element: <RedirectIfAuth />,
+    children: [
+      { path: '/login', element: <Login /> },
+      { path: '/register', element: <Register /> },
+      { path: '/forgot-password', element: <ForgotPassword /> },
+    ],
+  },
+
+  // Protected app routes
+  {
+    element: <RequireAuth />,
+    children: [
+      { path: '/dashboard', element: <Dashboard /> },
+      { path: '/ioc-scanner', element: <IOCScanner /> },
+      { path: '/blog', element: <BlogList /> },
+      { path: '/blog/:slug', element: <BlogPost /> },
+      { path: '/admin/blog', element: <BlogAdmin /> },
+      { path: '/admin/blog/new', element: <BlogEditor /> },
+      { path: '/admin/blog/:id/edit', element: <BlogEditor /> },
+      { path: '/dns-email', element: <DNSEmailSecurity /> },
+      { path: '/sbom', element: <SBOMScanner /> },
+      { path: '/network-scan', element: <NetworkScan /> },
+      { path: '/ai-pentest', element: <AIPentest /> },
+      { path: '/vendor-scorecard', element: <VendorScorecard /> },
+    ],
+  },
+
+  // Catch-all
+  { path: '*', element: <Navigate to="/" replace /> },
+])

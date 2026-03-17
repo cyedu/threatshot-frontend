@@ -320,7 +320,7 @@ export default function Landing() {
 
           <div className="border-t border-brand-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-brand-muted">
             <span>© {new Date().getFullYear()} MSInfo Services. All rights reserved.</span>
-            <span className="italic">modernising cyber services</span>
+            <span className="italic">Modernising Secure Digital Future</span>
           </div>
         </div>
       </footer>

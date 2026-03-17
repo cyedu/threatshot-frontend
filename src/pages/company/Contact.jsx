@@ -106,7 +106,7 @@ export default function Contact() {
         <div className="border-t border-brand-border pt-8 space-y-2">
           <h2 className="font-semibold text-brand-text text-sm">MSInfo Services</h2>
           <p className="text-brand-muted text-sm">India</p>
-          <p className="text-brand-muted text-xs mt-1 italic">Modernising cyber services</p>
+          <p className="text-brand-muted text-xs mt-1 italic">Modernising Secure Digital Future</p>
         </div>
 
         {/* Legal quick links */}

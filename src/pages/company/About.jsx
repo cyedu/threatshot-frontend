@@ -53,7 +53,7 @@ export default function About() {
         <div className="max-w-5xl mx-auto px-6 py-16 text-center">
           <p className="text-xs text-brand-accent2 uppercase tracking-widest mb-3 font-medium">MSInfo Services</p>
           <h1 className="text-3xl sm:text-4xl font-bold text-brand-text mb-4">
-            Modernising Cyber Services<br />
+            Modernising Secure Digital Future<br />
             <span className="text-brand-accent">for Indian Enterprises</span>
           </h1>
           <p className="text-brand-muted max-w-2xl mx-auto text-base leading-relaxed">
@@ -102,7 +102,7 @@ export default function About() {
           <h2 className="text-xl font-bold text-brand-text border-b border-brand-border pb-2">About MSInfo Services</h2>
           <p className="text-brand-muted leading-relaxed">
             MSInfo Services is a registered Indian company building cybersecurity products and managed security services.
-            Our tagline — <em className="text-brand-text font-medium">modernising cyber services</em> — reflects our belief
+            Our tagline — <em className="text-brand-text font-medium">Modernising Secure Digital Future</em> — reflects our belief
             that cybersecurity tooling in India must evolve to match the speed of the threat landscape.
           </p>
           <p className="text-brand-muted leading-relaxed">

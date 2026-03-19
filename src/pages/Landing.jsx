@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Shield, Zap, Globe, Lock, TrendingUp, CheckCircle } from 'lucide-react'
 import ThemeToggle from '../components/ThemeToggle'
 import NewsTicker from '../components/NewsTicker'
+import { useSEO } from '../hooks/useSEO'
 
 const FEATURES = [
   {
@@ -95,6 +96,39 @@ const PLANS = [
 ]
 
 export default function Landing() {
+  useSEO({
+    title: 'Cyber Threat Intelligence for Indian SMEs & Fintechs',
+    description:
+      'ThreatShot delivers real-time threat feeds, CVE search, IOC scanning, and DNS security tailored for Indian SMEs, NBFCs, and fintech companies. Stay ahead of attackers.',
+    keywords:
+      'cyber threat intelligence India, CVE database, IOC scanner, threat feed, CERT-IN, CISA KEV, vulnerability management, Indian cybersecurity, NBFC security, fintech security',
+    canonical: 'https://threatshot.in/',
+    structuredData: [
+      {
+        '@type': 'Organization',
+        '@id': 'https://threatshot.in/#organization',
+        name: 'ThreatShot',
+        url: 'https://threatshot.in',
+        logo: { '@type': 'ImageObject', url: 'https://threatshot.in/favicon.svg' },
+        description:
+          'Cyber threat intelligence platform for Indian SMEs, NBFCs, and fintech. Operated by MSInfo Services.',
+        address: { '@type': 'PostalAddress', addressCountry: 'IN' },
+      },
+      {
+        '@type': 'WebSite',
+        '@id': 'https://threatshot.in/#website',
+        url: 'https://threatshot.in',
+        name: 'ThreatShot',
+        publisher: { '@id': 'https://threatshot.in/#organization' },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: { '@type': 'EntryPoint', urlTemplate: 'https://threatshot.in/cve?q={search_term_string}' },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    ],
+  })
+
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text transition-colors duration-200">
 

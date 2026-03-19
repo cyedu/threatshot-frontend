@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Clock, Shield } from 'lucide-react'
 import PageWrapper from '../../components/layout/PageWrapper'
 import { Spinner } from '../../components/ui'
 import axios from 'axios'
+import { useSEO } from '../../hooks/useSEO'
 
 const publicApi = axios.create({ baseURL: (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1' })
 import { formatDate } from '../../lib/utils'
@@ -18,13 +19,52 @@ export default function BlogPost() {
     queryFn: () => publicApi.get(`/blog/${slug}`).then(r => r.data),
   })
 
+  const post = data?.post ?? null
+
+  useSEO({
+    title: post?.title ?? null,
+    description: post?.summary ?? null,
+    keywords: post?.tags?.join(', ') ?? null,
+    ogImage: post?.cover_image_url ?? null,
+    ogType: 'article',
+    canonical: post ? `https://threatshot.in/blog/${post.slug}` : null,
+    structuredData: post
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: post.title,
+          description: post.summary,
+          image: post.cover_image_url || 'https://threatshot.in/og-image.png',
+          url: `https://threatshot.in/blog/${post.slug}`,
+          datePublished: post.published_at,
+          dateModified: post.updated_at || post.published_at,
+          keywords: post.tags?.join(', '),
+          inLanguage: 'en-IN',
+          author: {
+            '@type': 'Organization',
+            name: 'ThreatShot',
+            url: 'https://threatshot.in',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'ThreatShot',
+            logo: { '@type': 'ImageObject', url: 'https://threatshot.in/favicon.svg' },
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://threatshot.in/blog/${post.slug}`,
+          },
+        }
+      : null,
+  })
+
   if (isLoading) return (
     <PageWrapper title="Loading…">
       <div className="flex justify-center py-20"><Spinner /></div>
     </PageWrapper>
   )
 
-  if (isError || !data?.post) return (
+  if (isError || !post) return (
     <PageWrapper title="Not Found">
       <div className="max-w-2xl mx-auto text-center py-20 space-y-4">
         <Shield className="w-12 h-12 text-brand-border mx-auto" />
@@ -34,7 +74,7 @@ export default function BlogPost() {
     </PageWrapper>
   )
 
-  const { post, related } = data
+  const { related } = data
 
   return (
     <PageWrapper title={post.title}>

@@ -5,6 +5,7 @@ import { Clock, Calendar, Tag, ChevronLeft, ChevronRight, Shield } from 'lucide-
 import PageWrapper from '../../components/layout/PageWrapper'
 import { Spinner } from '../../components/ui'
 import axios from 'axios'
+import { useSEO } from '../../hooks/useSEO'
 
 const publicApi = axios.create({ baseURL: (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1' })
 import { formatDate } from '../../lib/utils'
@@ -12,6 +13,28 @@ import { formatDate } from '../../lib/utils'
 export default function BlogList() {
   const [selectedTag, setSelectedTag] = useState(null)
   const [page, setPage] = useState(1)
+
+  useSEO({
+    title: 'Cyber Intelligence Blog — Threat Analysis & Security Guidance',
+    description:
+      'Threat analysis, vulnerability breakdowns, ransomware briefings, and security guidance tailored for Indian SMEs, NBFCs, and fintech companies.',
+    keywords:
+      'cybersecurity blog India, threat analysis, vulnerability report, ransomware, phishing, CERT-IN alerts, NBFC security blog, fintech cyber risk',
+    canonical: 'https://threatshot.in/blog',
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'Blog',
+      name: 'ThreatShot Intelligence Blog',
+      description: 'Threat analysis, vulnerability breakdowns, and security guidance for Indian enterprises.',
+      url: 'https://threatshot.in/blog',
+      publisher: {
+        '@type': 'Organization',
+        name: 'ThreatShot',
+        logo: { '@type': 'ImageObject', url: 'https://threatshot.in/favicon.svg' },
+      },
+      inLanguage: 'en-IN',
+    },
+  })
 
   const params = new URLSearchParams({ page, per_page: 9 })
   if (selectedTag) params.set('tags', selectedTag)

@@ -31,6 +31,7 @@ import VendorScorecard from './pages/coming-soon/VendorScorecard'
 // Legal pages
 import PrivacyPolicy from './pages/legal/PrivacyPolicy'
 import TermsOfService from './pages/legal/TermsOfService'
+import TermsAndConditions from './pages/legal/TermsAndConditions'
 import RefundPolicy from './pages/legal/RefundPolicy'
 import CookiePolicy from './pages/legal/CookiePolicy'
 import AcceptableUse from './pages/legal/AcceptableUse'
@@ -65,6 +66,7 @@ export const router = createBrowserRouter([
   // Legal pages
   { path: '/privacy', element: <PrivacyPolicy /> },
   { path: '/terms', element: <TermsOfService /> },
+  { path: '/terms-and-conditions', element: <TermsAndConditions /> },
   { path: '/refunds', element: <RefundPolicy /> },
   { path: '/cookies', element: <CookiePolicy /> },
   { path: '/aup', element: <AcceptableUse /> },

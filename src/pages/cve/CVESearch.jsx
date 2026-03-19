@@ -9,6 +9,7 @@ import PageWrapper from '../../components/layout/PageWrapper'
 import { Card, Badge, Spinner, Input, Button, Textarea, Alert } from '../../components/ui'
 import api from '../../lib/api'
 import { cn } from '../../lib/utils'
+import { useSEO } from '../../hooks/useSEO'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -593,17 +594,26 @@ export default function CVESearch() {
   const [downloadError, setDownloadError] = useState(null)
   const loggedIn = isLoggedIn()
 
-  // Update document title for SEO
-  useEffect(() => {
-    document.title = 'CVE Search — ThreatShot Cyber Threat Intelligence'
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) {
-      meta.setAttribute('content', 'Search and explore CVE vulnerabilities with CVSS scores, exploit availability, and CISA KEV data. Real-time NVD data for security analysts.')
-    }
-    return () => {
-      document.title = 'ThreatShot — Cyber Threat Intelligence for India'
-    }
-  }, [])
+  useSEO({
+    title: 'CVE Vulnerability Database — Search CVEs with CVSS & Exploit Data',
+    description:
+      'Search the full CVE database with CVSS v3/v4 scores, exploit availability, CISA KEV status, and affected products. Export results as CSV or JSON. Free for Indian security teams.',
+    keywords:
+      'CVE search, CVSS score, CISA KEV, NVD vulnerability database, exploit database, vulnerability management, CVE lookup, security vulnerability India',
+    canonical: 'https://threatshot.in/cve',
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'Dataset',
+      name: 'ThreatShot CVE Vulnerability Database',
+      description:
+        'Searchable CVE database with CVSS v3/v4 scores, exploit availability flags, CISA Known Exploited Vulnerabilities (KEV) status, CWE classifications, and affected product listings. Sourced from NVD.',
+      url: 'https://threatshot.in/cve',
+      creator: { '@type': 'Organization', name: 'ThreatShot', url: 'https://threatshot.in' },
+      license: 'https://nvd.nist.gov/vuln/data-feeds',
+      keywords: ['CVE', 'CVSS', 'vulnerability', 'CISA KEV', 'NVD', 'exploit', 'cybersecurity'],
+      inLanguage: 'en-IN',
+    },
+  })
 
   // Stats
   const { data: statsData } = useQuery({

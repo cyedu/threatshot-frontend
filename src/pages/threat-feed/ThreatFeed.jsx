@@ -5,11 +5,36 @@ import PageWrapper from '../../components/layout/PageWrapper'
 import { Card, Badge, Spinner, Select, Input } from '../../components/ui'
 import api from '../../lib/api'
 import { formatRelativeTime } from '../../lib/utils'
+import { useSEO } from '../../hooks/useSEO'
 
 const SEVERITIES = ['all', 'critical', 'high', 'medium', 'low']
 
 export default function ThreatFeed() {
   const [page, setPage] = useState(1)
+
+  useSEO({
+    title: 'Cyber Threat Intelligence Feed — Live Threat News for India',
+    description:
+      'Real-time threat intelligence aggregated from CERT-IN, CISA, NVD, Bleeping Computer, and AlienVault OTX. Critical alerts, ransomware, phishing, and zero-day threats relevant to Indian organisations.',
+    keywords:
+      'threat feed India, CERT-IN alerts, CISA known exploited vulnerabilities, ransomware news, zero-day threats, cybersecurity news India, live threat intelligence',
+    canonical: 'https://threatshot.in/threat-feed',
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'DataFeed',
+      name: 'ThreatShot Cyber Threat Intelligence Feed',
+      description:
+        'Aggregated real-time threat intelligence from CERT-IN, CISA, NVD, Bleeping Computer, The Hacker News, Krebs on Security, and AlienVault OTX.',
+      url: 'https://threatshot.in/threat-feed',
+      provider: {
+        '@type': 'Organization',
+        name: 'ThreatShot',
+        url: 'https://threatshot.in',
+      },
+      inLanguage: 'en-IN',
+      about: { '@type': 'Thing', name: 'Cyber Threat Intelligence' },
+    },
+  })
   const [severity, setSeverity] = useState('all')
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')

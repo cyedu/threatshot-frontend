@@ -378,7 +378,7 @@ export default function TermsAndConditions() {
           material, the Company will:
         </P>
         <UL items={[
-          'Provide at least 14 days' written notice via email to your registered address and/or in-app notification.',
+          "Provide at least 14 days' written notice via email to your registered address and/or in-app notification.",
           'Publish the updated Terms with a revised "Last Updated" date.',
           'Where required by the DPDP Act or other applicable law, obtain fresh consent for material changes affecting data processing.',
         ]} />

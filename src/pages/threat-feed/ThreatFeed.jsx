@@ -45,7 +45,7 @@ export default function ThreatFeed() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['threat-feed', page, severity, search],
-    queryFn: () => api.get(`/threat-feed?${params}`).then(r => r.data),
+    queryFn: () => api.get(`/threat-feed/?${params}`).then(r => r.data),
     keepPreviousData: true,
   })
 

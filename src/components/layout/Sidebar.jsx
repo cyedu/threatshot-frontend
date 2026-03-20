@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { Shield, Radio, Search, BookOpen, Clock, LayoutDashboard, Zap, PenSquare } from 'lucide-react'
+import { Shield, Radio, Search, BookOpen, Clock, LayoutDashboard, Zap, PenSquare, ShieldAlert } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import useAuthStore from '../../store/authStore'
 
 const navItems = [
   { to: '/dashboard',    label: 'Dashboard',      icon: LayoutDashboard },
   { to: '/threat-feed',  label: 'Threat Feed',    icon: Radio },
+  { to: '/cve',          label: 'CVE Search',     icon: ShieldAlert },
   { to: '/ioc-scanner',  label: 'IOC Scanner',    icon: Search },
   { to: '/blog',         label: 'Blog',           icon: BookOpen },
 ]

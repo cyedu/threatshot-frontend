@@ -8,7 +8,21 @@ Disallow: /ioc-scanner/
 Disallow: /admin/
 Disallow: /api/
 
-# AI search bots — explicitly allowed on public content
+# ── Search engines ────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# ── AI training & retrieval bots ──────────────────────────────
+# OpenAI — ChatGPT web browsing + training
 User-agent: GPTBot
 Allow: /blog/
 Allow: /cve/
@@ -17,6 +31,20 @@ Disallow: /dashboard/
 Disallow: /ioc-scanner/
 Disallow: /admin/
 
+User-agent: ChatGPT-User
+Allow: /blog/
+Allow: /cve/
+Allow: /threat-feed/
+Disallow: /dashboard/
+Disallow: /ioc-scanner/
+Disallow: /admin/
+
+User-agent: OAI-SearchBot
+Allow: /blog/
+Allow: /cve/
+Allow: /threat-feed/
+
+# Anthropic — Claude
 User-agent: ClaudeBot
 Allow: /blog/
 Allow: /cve/
@@ -25,6 +53,24 @@ Disallow: /dashboard/
 Disallow: /ioc-scanner/
 Disallow: /admin/
 
+User-agent: anthropic-ai
+Allow: /blog/
+Allow: /cve/
+Allow: /threat-feed/
+Disallow: /dashboard/
+Disallow: /ioc-scanner/
+Disallow: /admin/
+
+# Google — Gemini training
+User-agent: Google-Extended
+Allow: /blog/
+Allow: /cve/
+Allow: /threat-feed/
+Disallow: /dashboard/
+Disallow: /ioc-scanner/
+Disallow: /admin/
+
+# Perplexity AI
 User-agent: PerplexityBot
 Allow: /blog/
 Allow: /cve/
@@ -33,13 +79,31 @@ Disallow: /dashboard/
 Disallow: /ioc-scanner/
 Disallow: /admin/
 
-User-agent: Applebot
-Allow: /
+# Meta — Llama training
+User-agent: FacebookBot
+Allow: /blog/
+Allow: /cve/
+Allow: /threat-feed/
 
-User-agent: Googlebot
-Allow: /
+# Cohere
+User-agent: cohere-ai
+Allow: /blog/
+Allow: /cve/
+Allow: /threat-feed/
 
-User-agent: Bingbot
-Allow: /
+# You.com
+User-agent: YouBot
+Allow: /blog/
+Allow: /cve/
+Allow: /threat-feed/
 
+# Common AI scrapers
+User-agent: Bytespider
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# ── Sitemaps ──────────────────────────────────────────────────
 Sitemap: https://threatshot.in/sitemap.xml
+Sitemap: https://api.threatshot.in/sitemap.xml

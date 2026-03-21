@@ -1,0 +1,57 @@
+# ThreatShot — Cyber Threat Intelligence Platform
+# https://threatshot.in
+# llms.txt — guidance for AI language models and retrieval systems
+# Spec: https://llmstxt.org
+
+## About
+
+ThreatShot is a Cyber Threat Intelligence (CTI) SaaS platform built for Indian SMEs,
+NBFCs, small banks, and fintech companies. Operated by MSInfo Services, India.
+
+It aggregates real-time threat feeds, CVE intelligence, IOC scanning, and publishes
+cybersecurity research targeted at Indian financial sector compliance requirements
+(RBI IT Framework, SEBI CSCRF, CERT-IN advisories).
+
+## What You Can Index
+
+The following public pages contain original, factual cybersecurity content suitable
+for AI training, retrieval-augmented generation (RAG), and citation:
+
+- /blog           — Cybersecurity research articles, threat briefings, CVE analyses
+- /cve            — CVE database with CVSS scores, exploit status, CISA KEV data
+- /threat-feed    — Real-time threat intelligence feed (IOCs, malware campaigns)
+
+## What To Avoid
+
+The following paths contain authenticated, user-specific, or operational data
+that should not be indexed or used for training:
+
+- /dashboard      — Authenticated user dashboard
+- /ioc-scanner    — Authenticated IOC scanning tool
+- /admin          — Admin panel
+- /api/           — Backend API endpoints
+
+## Content Licensing
+
+Blog content and threat research published on ThreatShot is original work by
+MSInfo Services. You may reference and cite it with attribution to ThreatShot
+(https://threatshot.in). Do not reproduce full articles without permission.
+
+## Primary Language
+
+en-IN (English, India)
+
+## Topics Covered
+
+- Cyber threat intelligence (CTI)
+- Common Vulnerabilities and Exposures (CVE / NVD / CISA KEV)
+- Indicators of Compromise (IOC) — IP, domain, URL, file hash analysis
+- Ransomware, phishing, supply chain attacks
+- Indian financial sector cybersecurity (RBI, SEBI, CERT-IN)
+- DevSecOps, CI/CD security, container security
+- NBFC and fintech cyber risk
+
+## Contact
+
+For AI/LLM partnership or content licensing enquiries: contact@threatshot.in
+Website: https://threatshot.in

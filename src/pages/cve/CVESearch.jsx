@@ -385,12 +385,13 @@ function CVECard({ item }) {
 // StatsBar
 // ---------------------------------------------------------------------------
 
-function StatsBar({ stats }) {
+function StatsBar({ total, critical, withExploit, inKev, loading }) {
+  const fmt = (v) => v != null ? v.toLocaleString() : '—'
   const items = [
-    { label: 'Total CVEs', value: stats?.total?.toLocaleString() ?? '—', icon: Database, color: 'text-brand-accent2' },
-    { label: 'Critical', value: stats?.critical?.toLocaleString() ?? '—', icon: AlertTriangle, color: 'text-red-400' },
-    { label: 'With Exploit', value: stats?.with_exploit?.toLocaleString() ?? '—', icon: Zap, color: 'text-orange-400' },
-    { label: 'CISA KEV', value: stats?.in_cisa_kev?.toLocaleString() ?? '—', icon: Shield, color: 'text-purple-400' },
+    { label: 'Total CVEs',  value: fmt(total),       icon: Database,       color: 'text-brand-accent2' },
+    { label: 'Critical',    value: fmt(critical),     icon: AlertTriangle,  color: 'text-red-400' },
+    { label: 'With Exploit',value: fmt(withExploit),  icon: Zap,            color: 'text-orange-400' },
+    { label: 'CISA KEV',    value: fmt(inKev),        icon: Shield,         color: 'text-purple-400' },
   ]
 
   return (
@@ -400,7 +401,9 @@ function StatsBar({ stats }) {
           <Icon className={cn('w-5 h-5 shrink-0', color)} />
           <div>
             <p className="text-xs text-brand-muted">{label}</p>
-            <p className={cn('text-lg font-bold', color)}>{value}</p>
+            <p className={cn('text-lg font-bold', color)}>
+              {loading ? <span className="opacity-40">…</span> : value}
+            </p>
           </div>
         </Card>
       ))}
@@ -615,12 +618,7 @@ export default function CVESearch() {
     },
   })
 
-  // Stats
-  const { data: statsData } = useQuery({
-    queryKey: ['cve-stats'],
-    queryFn: () => api.get('/cve/stats').then(r => r.data.data),
-    staleTime: 5 * 60 * 1000,
-  })
+  const hasFilters = q || severity !== 'ALL' || exploitOnly || kevOnly || minScore || maxScore
 
   // Build query params
   const params = new URLSearchParams({ page, per_page: 20 })
@@ -640,6 +638,41 @@ export default function CVESearch() {
 
   const items = data?.data ?? []
   const meta = data?.meta ?? {}
+
+  // Context-aware stats — only when filters/search are active, blank otherwise
+  const baseFilterKey = [q, severity, exploitOnly, kevOnly, minScore, maxScore]
+
+  const buildCountParams = (overrides = {}) => {
+    const p = new URLSearchParams({ page: 1, per_page: 1 })
+    if (q) p.set('q', q)
+    if (severity !== 'ALL') p.set('severity', severity)
+    if (exploitOnly) p.set('exploit_only', 'true')
+    if (kevOnly) p.set('kev_only', 'true')
+    if (minScore !== '') p.set('min_score', minScore)
+    if (maxScore !== '') p.set('max_score', maxScore)
+    Object.entries(overrides).forEach(([k, v]) => p.set(k, v))
+    return p
+  }
+
+  const countQueryOpts = { enabled: !!hasFilters, staleTime: 60 * 1000 }
+
+  const { data: criticalData, isFetching: critFetching } = useQuery({
+    queryKey: ['cve-count-critical', ...baseFilterKey],
+    queryFn: () => api.get(`/cve/?${buildCountParams({ severity: 'CRITICAL' })}`).then(r => r.data.meta?.total ?? 0),
+    ...countQueryOpts,
+  })
+  const { data: exploitData, isFetching: exploitFetching } = useQuery({
+    queryKey: ['cve-count-exploit', ...baseFilterKey],
+    queryFn: () => api.get(`/cve/?${buildCountParams({ exploit_only: 'true' })}`).then(r => r.data.meta?.total ?? 0),
+    ...countQueryOpts,
+  })
+  const { data: kevData, isFetching: kevFetching } = useQuery({
+    queryKey: ['cve-count-kev', ...baseFilterKey],
+    queryFn: () => api.get(`/cve/?${buildCountParams({ kev_only: 'true' })}`).then(r => r.data.meta?.total ?? 0),
+    ...countQueryOpts,
+  })
+
+  const statsLoading = critFetching || exploitFetching || kevFetching
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -662,8 +695,6 @@ export default function CVESearch() {
     setMaxScore('')
     setPage(1)
   }
-
-  const hasFilters = q || severity !== 'ALL' || exploitOnly || kevOnly || minScore || maxScore
 
   const handleDownload = async () => {
     if (!loggedIn) {
@@ -709,12 +740,9 @@ export default function CVESearch() {
         <div>
           <h1 className="text-xl font-bold text-brand-text">CVE Search</h1>
           <p className="text-brand-muted text-sm mt-0.5">
-            Search {statsData?.total?.toLocaleString() ?? '...'} vulnerabilities from NVD. Updated daily. Filter by severity, CVSS score, exploit availability, and CISA KEV status.
+            Search vulnerabilities from NVD. Updated daily. Filter by severity, CVSS score, exploit availability, and CISA KEV status.
           </p>
         </div>
-
-        {/* Stats bar */}
-        <StatsBar stats={statsData} />
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-brand-border">
@@ -740,14 +768,14 @@ export default function CVESearch() {
         {/* Search Tab */}
         {tab === 'search' && (
           <div className="space-y-4">
-            {/* Search input */}
+            {/* Search input — always at the top */}
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted pointer-events-none" />
                 <Input
                   value={qInput}
                   onChange={e => setQInput(e.target.value)}
-                  placeholder="Search CVE ID (e.g. CVE-2021-44228) or keyword (e.g. log4j, buffer overflow)…"
+                  placeholder="Search CVE ID (e.g. CVE-2021-44228) or keyword (e.g. apache, log4j, buffer overflow)…"
                   className="pl-9"
                 />
               </div>
@@ -840,6 +868,15 @@ export default function CVESearch() {
                 />
               </div>
             </div>
+
+            {/* Stats — show context-aware counts when search is active, blank otherwise */}
+            <StatsBar
+              total={hasFilters ? meta.total : null}
+              critical={hasFilters ? criticalData : null}
+              withExploit={hasFilters ? exploitData : null}
+              inKev={hasFilters ? kevData : null}
+              loading={isFetching && statsLoading}
+            />
 
             {/* Results meta + download */}
             <div className="flex items-center justify-between gap-3 flex-wrap">

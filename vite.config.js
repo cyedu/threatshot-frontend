@@ -6,6 +6,13 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true, // bind to 0.0.0.0 so Docker can reach it
+    proxy: {
+      '/api': {
+        target: 'https://api.threatshot.in',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   preview: {
     port: 3000,

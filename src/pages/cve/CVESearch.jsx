@@ -388,10 +388,10 @@ function CVECard({ item }) {
 function StatsBar({ total, critical, withExploit, inKev, loading }) {
   const fmt = (v) => v != null ? v.toLocaleString() : '—'
   const items = [
-    { label: 'Total CVEs',  value: fmt(total),       icon: Database,       color: 'text-brand-accent2' },
-    { label: 'Critical',    value: fmt(critical),     icon: AlertTriangle,  color: 'text-red-400' },
-    { label: 'With Exploit',value: fmt(withExploit),  icon: Zap,            color: 'text-orange-400' },
-    { label: 'CISA KEV',    value: fmt(inKev),        icon: Shield,         color: 'text-purple-400' },
+    { label: 'Matching CVEs', value: fmt(total),      icon: Database,       color: 'text-brand-accent2' },
+    { label: 'Critical',      value: fmt(critical),   icon: AlertTriangle,  color: 'text-red-400' },
+    { label: 'With Exploit',  value: fmt(withExploit),icon: Zap,            color: 'text-orange-400' },
+    { label: 'CISA KEV',      value: fmt(inKev),      icon: Shield,         color: 'text-purple-400' },
   ]
 
   return (
@@ -593,6 +593,8 @@ export default function CVESearch() {
   const [minScore, setMinScore] = useState('')
   const [maxScore, setMaxScore] = useState('')
   const [page, setPage] = useState(1)
+  const [version, setVersion] = useState('')
+  const [versionInput, setVersionInput] = useState('')
   const [downloadFormat, setDownloadFormat] = useState('csv')
   const [downloadError, setDownloadError] = useState(null)
   const loggedIn = isLoggedIn()
@@ -618,7 +620,7 @@ export default function CVESearch() {
     },
   })
 
-  const hasFilters = q || severity !== 'ALL' || exploitOnly || kevOnly || minScore || maxScore
+  const hasFilters = q || severity !== 'ALL' || exploitOnly || kevOnly || minScore || maxScore || version
 
   // Build query params
   const params = new URLSearchParams({ page, per_page: 20 })
@@ -628,9 +630,10 @@ export default function CVESearch() {
   if (kevOnly) params.set('kev_only', 'true')
   if (minScore !== '') params.set('min_score', minScore)
   if (maxScore !== '') params.set('max_score', maxScore)
+  if (version) params.set('version', version)
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['cve-search', q, severity, exploitOnly, kevOnly, minScore, maxScore, page],
+    queryKey: ['cve-search', q, severity, exploitOnly, kevOnly, minScore, maxScore, version, page],
     queryFn: () => api.get(`/cve/?${params}`).then(r => r.data),
     keepPreviousData: true,
     staleTime: 60 * 1000,
@@ -640,7 +643,7 @@ export default function CVESearch() {
   const meta = data?.meta ?? {}
 
   // Context-aware stats — only when filters/search are active, blank otherwise
-  const baseFilterKey = [q, severity, exploitOnly, kevOnly, minScore, maxScore]
+  const baseFilterKey = [q, severity, exploitOnly, kevOnly, minScore, maxScore, version]
 
   const buildCountParams = (overrides = {}) => {
     const p = new URLSearchParams({ page: 1, per_page: 1 })
@@ -650,6 +653,7 @@ export default function CVESearch() {
     if (kevOnly) p.set('kev_only', 'true')
     if (minScore !== '') p.set('min_score', minScore)
     if (maxScore !== '') p.set('max_score', maxScore)
+    if (version) p.set('version', version)
     Object.entries(overrides).forEach(([k, v]) => p.set(k, v))
     return p
   }
@@ -677,6 +681,7 @@ export default function CVESearch() {
   const handleSearch = (e) => {
     e.preventDefault()
     setQ(qInput)
+    setVersion(versionInput)
     setPage(1)
   }
 
@@ -688,6 +693,8 @@ export default function CVESearch() {
   const handleClearFilters = () => {
     setQ('')
     setQInput('')
+    setVersion('')
+    setVersionInput('')
     setSeverity('ALL')
     setExploitOnly(false)
     setKevOnly(false)
@@ -769,21 +776,47 @@ export default function CVESearch() {
         {tab === 'search' && (
           <div className="space-y-4">
             {/* Search input — always at the top */}
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted pointer-events-none" />
-                <Input
-                  value={qInput}
-                  onChange={e => setQInput(e.target.value)}
-                  placeholder="Search CVE ID (e.g. CVE-2021-44228) or keyword (e.g. apache, log4j, buffer overflow)…"
-                  className="pl-9"
-                />
+            <form onSubmit={handleSearch} className="space-y-2">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted pointer-events-none" />
+                  <Input
+                    value={qInput}
+                    onChange={e => setQInput(e.target.value)}
+                    placeholder="Search CVE ID (e.g. CVE-2021-44228) or product (e.g. python, log4j, openssl)…"
+                    className="pl-9"
+                  />
+                </div>
+
+                {/* Version tag — optional, narrows results to a specific affected version */}
+                <div className="relative shrink-0" title="Optional: filter by affected version (e.g. 3.9, 2.14.1)">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-brand-muted font-medium pointer-events-none select-none">
+                    v
+                  </span>
+                  <input
+                    value={versionInput}
+                    onChange={e => setVersionInput(e.target.value)}
+                    placeholder="version"
+                    className="w-24 pl-6 pr-2 h-full bg-brand-bg border border-brand-border rounded-md text-brand-text text-xs focus:outline-none focus:border-brand-accent2 placeholder:text-brand-muted"
+                  />
+                </div>
+
+                <Button type="submit" variant="primary">Search</Button>
+                {hasFilters && (
+                  <Button type="button" variant="ghost" onClick={handleClearFilters}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
-              <Button type="submit" variant="primary">Search</Button>
-              {hasFilters && (
-                <Button type="button" variant="ghost" onClick={handleClearFilters}>
-                  <X className="w-4 h-4" />
-                </Button>
+
+              {/* Version hint — only visible when user has typed something */}
+              {(qInput || versionInput) && (
+                <p className="text-[11px] text-brand-muted pl-0.5">
+                  {versionInput
+                    ? <>Searching for <span className="text-brand-text font-medium">"{qInput || 'any'}"</span> affected at version <span className="text-brand-accent2 font-mono font-medium">{versionInput}</span></>
+                    : <>Add a version (e.g. <span className="font-mono text-brand-muted">3.9</span>, <span className="font-mono text-brand-muted">2.14.1</span>) to narrow by specific affected release</>
+                  }
+                </p>
               )}
             </form>
 
@@ -869,14 +902,16 @@ export default function CVESearch() {
               </div>
             </div>
 
-            {/* Stats — show context-aware counts when search is active, blank otherwise */}
-            <StatsBar
-              total={hasFilters ? meta.total : null}
-              critical={hasFilters ? criticalData : null}
-              withExploit={hasFilters ? exploitData : null}
-              inKev={hasFilters ? kevData : null}
-              loading={isFetching && statsLoading}
-            />
+            {/* Stats — only shown when a search/filter is active; counts reflect current query */}
+            {hasFilters && (
+              <StatsBar
+                total={meta.total}
+                critical={criticalData}
+                withExploit={exploitData}
+                inKev={kevData}
+                loading={isFetching || statsLoading}
+              />
+            )}
 
             {/* Results meta + download */}
             <div className="flex items-center justify-between gap-3 flex-wrap">

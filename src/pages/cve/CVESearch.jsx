@@ -385,28 +385,70 @@ function CVECard({ item }) {
 // StatsBar
 // ---------------------------------------------------------------------------
 
-function StatsBar({ total, critical, withExploit, inKev, loading }) {
+function StatsBar({ total, critical, withExploit, inKev, loading,
+  activeSeverity, activeExploit, activeKev,
+  onCritical, onExploit, onKev,
+}) {
   const fmt = (v) => v != null ? v.toLocaleString() : '—'
+
   const items = [
-    { label: 'Matching CVEs', value: fmt(total),      icon: Database,       color: 'text-brand-accent2' },
-    { label: 'Critical',      value: fmt(critical),   icon: AlertTriangle,  color: 'text-red-400' },
-    { label: 'With Exploit',  value: fmt(withExploit),icon: Zap,            color: 'text-orange-400' },
-    { label: 'CISA KEV',      value: fmt(inKev),      icon: Shield,         color: 'text-purple-400' },
+    {
+      label: 'Matching CVEs', value: fmt(total),
+      icon: Database, color: 'text-brand-accent2',
+      active: false, onClick: null,
+      activeBorder: '', activeBg: '',
+    },
+    {
+      label: 'Critical', value: fmt(critical),
+      icon: AlertTriangle, color: 'text-red-400',
+      active: activeSeverity === 'CRITICAL', onClick: onCritical,
+      activeBorder: 'border-red-600', activeBg: 'bg-red-950/40',
+    },
+    {
+      label: 'With Exploit', value: fmt(withExploit),
+      icon: Zap, color: 'text-orange-400',
+      active: activeExploit, onClick: onExploit,
+      activeBorder: 'border-orange-600', activeBg: 'bg-orange-950/40',
+    },
+    {
+      label: 'CISA KEV', value: fmt(inKev),
+      icon: Shield, color: 'text-purple-400',
+      active: activeKev, onClick: onKev,
+      activeBorder: 'border-purple-600', activeBg: 'bg-purple-950/40',
+    },
   ]
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {items.map(({ label, value, icon: Icon, color }) => (
-        <Card key={label} className="flex items-center gap-3 py-3">
-          <Icon className={cn('w-5 h-5 shrink-0', color)} />
-          <div>
-            <p className="text-xs text-brand-muted">{label}</p>
-            <p className={cn('text-lg font-bold', color)}>
-              {loading ? <span className="opacity-40">…</span> : value}
-            </p>
-          </div>
-        </Card>
-      ))}
+      {items.map(({ label, value, icon: Icon, color, active, onClick, activeBorder, activeBg }) => {
+        const isClickable = !!onClick
+        return (
+          <Card
+            key={label}
+            onClick={onClick ?? undefined}
+            role={isClickable ? 'button' : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick() } : undefined}
+            className={cn(
+              'flex items-center gap-3 py-3 transition-all duration-150',
+              isClickable && 'cursor-pointer hover:border-brand-muted select-none',
+              active && activeBorder,
+              active && activeBg,
+            )}
+          >
+            <Icon className={cn('w-5 h-5 shrink-0', color)} />
+            <div>
+              <p className="text-xs text-brand-muted flex items-center gap-1">
+                {label}
+                {active && <span className="text-[9px] font-bold uppercase tracking-wide text-white bg-brand-accent px-1 rounded">ON</span>}
+              </p>
+              <p className={cn('text-lg font-bold', color)}>
+                {loading ? <span className="opacity-40">…</span> : value}
+              </p>
+            </div>
+          </Card>
+        )
+      })}
     </div>
   )
 }
@@ -690,6 +732,20 @@ export default function CVESearch() {
     setPage(1)
   }
 
+  // StatsBar card click handlers — toggle filter on/off
+  const handleCriticalCard = () => {
+    setSeverity(prev => prev === 'CRITICAL' ? 'ALL' : 'CRITICAL')
+    setPage(1)
+  }
+  const handleExploitCard = () => {
+    setExploitOnly(prev => !prev)
+    setPage(1)
+  }
+  const handleKevCard = () => {
+    setKevOnly(prev => !prev)
+    setPage(1)
+  }
+
   const handleClearFilters = () => {
     setQ('')
     setQInput('')
@@ -788,16 +844,20 @@ export default function CVESearch() {
                   />
                 </div>
 
-                {/* Version tag — optional, narrows results to a specific affected version */}
-                <div className="relative shrink-0" title="Optional: filter by affected version (e.g. 3.9, 2.14.1)">
+                {/* Version tag — optional, narrows results to CVEs with explicit version in NVD data */}
+                <div className="relative shrink-0" title="Filter by specific affected version (e.g. 3.9, 2.14.1). Press Enter or Search to apply.">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-brand-muted font-medium pointer-events-none select-none">
                     v
                   </span>
                   <input
                     value={versionInput}
                     onChange={e => setVersionInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); setQ(qInput); setVersion(versionInput); setPage(1) } }}
                     placeholder="version"
-                    className="w-24 pl-6 pr-2 h-full bg-brand-bg border border-brand-border rounded-md text-brand-text text-xs focus:outline-none focus:border-brand-accent2 placeholder:text-brand-muted"
+                    className={cn(
+                      'w-24 pl-6 pr-2 h-full bg-brand-bg border rounded-md text-brand-text text-xs focus:outline-none focus:border-brand-accent2 placeholder:text-brand-muted',
+                      version && versionInput === version ? 'border-brand-accent2' : 'border-brand-border'
+                    )}
                   />
                 </div>
 
@@ -809,12 +869,12 @@ export default function CVESearch() {
                 )}
               </div>
 
-              {/* Version hint — only visible when user has typed something */}
-              {(qInput || versionInput) && (
-                <p className="text-[11px] text-brand-muted pl-0.5">
-                  {versionInput
-                    ? <>Searching for <span className="text-brand-text font-medium">"{qInput || 'any'}"</span> affected at version <span className="text-brand-accent2 font-mono font-medium">{versionInput}</span></>
-                    : <>Add a version (e.g. <span className="font-mono text-brand-muted">3.9</span>, <span className="font-mono text-brand-muted">2.14.1</span>) to narrow by specific affected release</>
+              {/* Version hint */}
+              {versionInput && (
+                <p className="text-[11px] pl-0.5">
+                  {versionInput !== version
+                    ? <span className="text-brand-muted">Press <kbd className="bg-brand-surface border border-brand-border rounded px-1 text-[10px]">Enter</kbd> or <span className="font-medium text-brand-text">Search</span> to filter by version <span className="font-mono text-brand-accent2">{versionInput}</span></span>
+                    : <span className="text-brand-muted">Showing CVEs with explicit <span className="font-mono text-brand-accent2">v{version}</span> in NVD data · <button type="button" onClick={() => { setVersion(''); setVersionInput(''); setPage(1) }} className="text-brand-accent hover:text-brand-text underline">clear</button></span>
                   }
                 </p>
               )}
@@ -910,6 +970,12 @@ export default function CVESearch() {
                 withExploit={exploitData}
                 inKev={kevData}
                 loading={isFetching || statsLoading}
+                activeSeverity={severity}
+                activeExploit={exploitOnly}
+                activeKev={kevOnly}
+                onCritical={handleCriticalCard}
+                onExploit={handleExploitCard}
+                onKev={handleKevCard}
               />
             )}
 

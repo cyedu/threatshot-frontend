@@ -5,6 +5,8 @@ import useAuthStore from './store/authStore'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import ForgotPassword from './pages/auth/ForgotPassword'
+import VerifyEmail from './pages/auth/VerifyEmail'
+import ResetPassword from './pages/auth/ResetPassword'
 
 // App pages
 import Dashboard from './pages/dashboard/Dashboard'
@@ -81,6 +83,10 @@ export const router = createBrowserRouter([
   // Company pages
   { path: '/about', element: <About /> },
   { path: '/contact', element: <Contact /> },
+
+  // Email verification and password reset — always public (token is the auth)
+  { path: '/verify-email', element: <VerifyEmail /> },
+  { path: '/reset-password/:token', element: <ResetPassword /> },
 
   // Public auth pages (redirect if already logged in)
   {

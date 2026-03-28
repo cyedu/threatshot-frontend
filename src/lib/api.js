@@ -75,8 +75,14 @@ api.interceptors.response.use(
       return api(original)
     } catch (refreshError) {
       processQueue(refreshError, null)
+      const hadToken = !!localStorage.getItem('access_token')
       localStorage.removeItem('access_token')
-      window.location.href = '/login'
+      // Only redirect to login if user was previously authenticated.
+      // Anonymous users hitting 401 (e.g. rate-limited endpoints) must not
+      // be redirected — that would break the public browsing experience.
+      if (hadToken) {
+        window.location.href = '/login'
+      }
       return Promise.reject(refreshError)
     } finally {
       isRefreshing = false

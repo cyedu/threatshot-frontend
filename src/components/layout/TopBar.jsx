@@ -37,21 +37,24 @@ export default function TopBar({ title }) {
         <ThemeToggle />
 
         {user && (
-          <div className="flex items-center gap-2 text-sm text-brand-muted pl-2 border-l border-brand-border">
-            <User className="w-4 h-4" />
-            <span>{user.email}</span>
-            <span className="bg-brand-surface border border-brand-border px-2 py-0.5 rounded text-xs capitalize">
-              {user.role}
-            </span>
-          </div>
+          <>
+            <div className="flex items-center gap-2 text-sm text-brand-muted pl-2 border-l border-brand-border">
+              <User className="w-4 h-4" />
+              <span>{user.email}</span>
+              <span className="bg-brand-surface border border-brand-border px-2 py-0.5 rounded text-xs capitalize">
+                {user.role}
+              </span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="text-brand-muted hover:text-brand-danger transition-colors p-1.5"
+              title="Logout"
+              aria-label="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </>
         )}
-        <button
-          onClick={handleLogout}
-          className="text-brand-muted hover:text-brand-danger transition-colors p-1.5"
-          title="Logout"
-        >
-          <LogOut className="w-4 h-4" />
-        </button>
       </div>
     </header>
   )

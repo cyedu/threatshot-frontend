@@ -579,14 +579,15 @@ export default function IOCScanner() {
   const { currentJob:jobId, result:bulkResult, setJob, reset } = useScanStore()
   const qc = useQueryClient()
 
+  const [showScanModal, setShowScanModal] = useState(false)
+  const isLoggedIn = !!localStorage.getItem('access_token')
+
   const { data:history, refetch:refetchHistory } = useQuery({
     queryKey: ['ioc-history'],
     queryFn: () => api.get('/ioc/history?limit=20').then(r=>r.data),
     staleTime: 30_000,
+    enabled: isLoggedIn,
   })
-
-  const [showScanModal, setShowScanModal] = useState(false)
-  const isLoggedIn = !!localStorage.getItem('access_token')
 
   const handleScan = async (e) => {
     e.preventDefault()

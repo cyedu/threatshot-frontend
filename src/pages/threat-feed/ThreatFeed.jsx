@@ -150,12 +150,12 @@ function FeedCard({ item }) {
             >
               {item.title}
             </button>
-            <div className="flex items-center gap-3 mt-1 text-xs text-brand-muted">
-              <span>{item.source}</span>
+            <div className="flex items-center gap-2 mt-1 text-xs text-brand-muted flex-wrap">
+              <span className="shrink-0">{item.source}</span>
               <span>·</span>
-              <span>{formatRelativeTime(item.published_at)}</span>
+              <span className="shrink-0">{formatRelativeTime(item.published_at)}</span>
               {item.tags?.slice(0, 3).map(tag => (
-                <span key={tag} className="bg-brand-bg border border-brand-border px-1.5 py-0.5 rounded text-brand-muted">{tag}</span>
+                <span key={tag} className="hidden sm:inline bg-brand-bg border border-brand-border px-1.5 py-0.5 rounded text-brand-muted">{tag}</span>
               ))}
             </div>
           </div>

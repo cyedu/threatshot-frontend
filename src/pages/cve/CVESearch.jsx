@@ -835,40 +835,46 @@ export default function CVESearch() {
           <div className="space-y-4">
             {/* Search input — always at the top */}
             <form onSubmit={handleSearch} className="space-y-2">
+              {/* Row 1: search input + search/clear buttons */}
               <div className="flex gap-2">
-                <div className="relative flex-1">
+                <div className="relative flex-1 min-w-0">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted pointer-events-none" />
                   <Input
                     value={qInput}
                     onChange={e => setQInput(e.target.value)}
-                    placeholder="Search CVE ID (e.g. CVE-2021-44228) or product (e.g. python, log4j, openssl)…"
+                    placeholder="CVE-2021-44228, log4j, openssl…"
                     className="pl-9"
                   />
                 </div>
-
-                {/* Version tag — optional, narrows results to CVEs with explicit version in NVD data */}
-                <div className="relative shrink-0" title="Filter by specific affected version (e.g. 3.9, 2.14.1). Press Enter or Search to apply.">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-brand-muted font-medium pointer-events-none select-none">
-                    v
-                  </span>
-                  <input
-                    value={versionInput}
-                    onChange={e => setVersionInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); setQ(qInput); setVersion(versionInput); setPage(1) } }}
-                    placeholder="version"
-                    className={cn(
-                      'w-24 pl-6 pr-2 h-full bg-brand-bg border rounded-md text-brand-text text-xs focus:outline-none focus:border-brand-accent2 placeholder:text-brand-muted',
-                      version && versionInput === version ? 'border-brand-accent2' : 'border-brand-border'
-                    )}
-                  />
-                </div>
-
-                <Button type="submit" variant="primary">Search</Button>
+                <Button type="submit" variant="primary" className="shrink-0">
+                  <Search className="w-4 h-4 sm:hidden" />
+                  <span className="hidden sm:inline">Search</span>
+                </Button>
                 {hasFilters && (
-                  <Button type="button" variant="ghost" onClick={handleClearFilters}>
+                  <Button type="button" variant="ghost" onClick={handleClearFilters} className="shrink-0">
                     <X className="w-4 h-4" />
                   </Button>
                 )}
+              </div>
+
+              {/* Row 2: version filter (full width on mobile) */}
+              <div
+                className="relative"
+                title="Filter by specific affected version (e.g. 3.9, 2.14.1). Press Enter or Search to apply."
+              >
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-brand-muted font-medium pointer-events-none select-none">
+                  v
+                </span>
+                <input
+                  value={versionInput}
+                  onChange={e => setVersionInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); setQ(qInput); setVersion(versionInput); setPage(1) } }}
+                  placeholder="Filter by version (optional, e.g. 3.9, 2.14.1)"
+                  className={cn(
+                    'w-full pl-6 pr-3 py-2 bg-brand-bg border rounded-md text-brand-text text-xs focus:outline-none focus:border-brand-accent2 placeholder:text-brand-muted',
+                    version && versionInput === version ? 'border-brand-accent2' : 'border-brand-border'
+                  )}
+                />
               </div>
 
               {/* Version hint */}

@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Shield, Zap, Globe, Lock, TrendingUp, CheckCircle } from 'lucide-react'
+import { Shield, Zap, Globe, Lock, TrendingUp, CheckCircle, Menu, X } from 'lucide-react'
 import ThemeToggle from '../components/ThemeToggle'
 import NewsTicker from '../components/NewsTicker'
 import { useSEO } from '../hooks/useSEO'
@@ -96,6 +97,8 @@ const PLANS = [
 ]
 
 export default function Landing() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
   useSEO({
     title: 'Cyber Threat Intelligence for Indian SMEs & Fintechs',
     description:
@@ -133,9 +136,9 @@ export default function Landing() {
     <div className="min-h-screen bg-brand-bg text-brand-text transition-colors duration-200">
 
       {/* Nav */}
-      <nav className="border-b border-brand-border px-6 py-4 sticky top-0 z-50 bg-brand-bg/90 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+      <nav className="border-b border-brand-border px-4 md:px-6 py-4 sticky top-0 z-50 bg-brand-bg/95 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
             <Shield className="w-6 h-6 text-brand-accent" />
             <span className="font-bold text-lg">
               <span className="text-brand-accent">THREAT</span>
@@ -143,44 +146,76 @@ export default function Landing() {
             </span>
           </Link>
 
+          {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-6">
             <Link to="/blog" className="text-sm font-medium text-brand-muted hover:text-brand-text transition-colors">Blog</Link>
             <Link to="/threat-feed" className="text-sm font-medium text-brand-muted hover:text-brand-text transition-colors">Threat News</Link>
             <Link to="/cve" className="text-sm font-medium text-brand-muted hover:text-brand-text transition-colors">CVE Search</Link>
           </div>
 
+          {/* Right actions */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link to="/login" className="text-sm text-brand-muted hover:text-brand-text transition-colors px-3 py-1.5">
+            <Link to="/login" className="hidden sm:block text-sm text-brand-muted hover:text-brand-text transition-colors px-3 py-1.5">
               Sign in
             </Link>
             <Link
               to="/register"
-              className="bg-brand-accent hover:bg-red-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+              className="bg-brand-accent hover:bg-red-700 text-white px-3 md:px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap"
             >
-              Get started free
+              <span className="hidden sm:inline">Get started free</span>
+              <span className="sm:hidden">Sign up</span>
             </Link>
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={() => setMobileMenuOpen(v => !v)}
+              className="md:hidden p-1.5 rounded-md text-brand-muted hover:text-brand-text hover:bg-brand-surface transition-colors"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-brand-border mt-4 pt-4 space-y-1 max-w-6xl mx-auto">
+            {[
+              { to: '/blog', label: 'Blog' },
+              { to: '/threat-feed', label: 'Threat News' },
+              { to: '/cve', label: 'CVE Search' },
+              { to: '/login', label: 'Sign in' },
+            ].map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2.5 rounded-md text-sm text-brand-muted hover:text-brand-text hover:bg-brand-surface transition-colors"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        )}
       </nav>
 
       {/* News ticker */}
       <NewsTicker />
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 py-20 text-center">
+      <section className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-20 text-center">
         <div className="inline-flex items-center gap-2 bg-brand-surface border border-brand-border rounded-full px-4 py-1.5 text-xs text-brand-accent2 mb-6">
           <Zap className="w-3 h-3" /> Built for Indian SMEs, NBFCs &amp; Fintech
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-          Cyber Threat Intelligence<br />
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 md:mb-6 leading-tight">
+          Cyber Threat Intelligence<br className="hidden sm:block" />{' '}
           <span className="text-brand-accent">That Works for You</span>
         </h1>
-        <p className="text-brand-muted text-lg max-w-2xl mx-auto mb-8">
+        <p className="text-brand-muted text-base md:text-lg max-w-2xl mx-auto mb-8">
           Stop drowning in global threat feeds. ThreatShot surfaces actionable intelligence
           relevant to Indian enterprises — in plain language, in real time.
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
           <Link
             to="/register"
             className="bg-brand-accent hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
@@ -197,7 +232,7 @@ export default function Landing() {
       </section>
 
       {/* Features */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
+      <section className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-16">
         <h2 className="text-2xl font-bold text-center text-brand-text mb-10">
           Everything you need to stay ahead of threats
         </h2>
@@ -221,7 +256,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
+      <section className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-16">
         <h2 className="text-2xl font-bold text-center text-brand-text mb-2">Simple, transparent pricing</h2>
         <p className="text-center text-sm text-brand-muted mb-10">Scale from free to enterprise — no surprise charges.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -279,7 +314,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-brand-border px-6 py-12 mt-8">
+      <footer className="border-t border-brand-border px-4 md:px-6 py-10 md:py-12 mt-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
             {/* Brand */}

@@ -16,15 +16,13 @@ export default function Register() {
   const [showPurpose, setShowPurpose] = useState(false)
   const [showDisclaimer, setShowDisclaimer] = useState(false)
 
-  // Four separate consent checkboxes
   const [consent, setConsent] = useState({
-    terms: false,       // Terms + Privacy + AUP
-    dataPurpose: false, // Minimal data collection acknowledgment
-    cookies: false,     // Essential cookies + IP/metadata collection
-    dpdp: false,        // DPDP Act 2023 explicit consent
+    terms: false,      // Terms + Privacy + AUP
+    cookies: false,    // Essential cookies
+    marketing: false,  // Optional — threat news, product updates
   })
 
-  const allConsented = consent.terms && consent.dataPurpose && consent.cookies && consent.dpdp
+  const requiredConsented = consent.terms && consent.cookies
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -42,9 +40,7 @@ export default function Register() {
     if (!form.password) return 'Password is required.'
     if (form.password.length < 10) return 'Password must be at least 10 characters.'
     if (!consent.terms) return 'You must accept the Terms of Service, Privacy Policy, and Acceptable Use Policy.'
-    if (!consent.dataPurpose) return 'You must acknowledge how your data is used.'
-    if (!consent.cookies) return 'You must acknowledge essential cookie and metadata collection.'
-    if (!consent.dpdp) return 'You must provide explicit consent under the DPDP Act, 2023.'
+    if (!consent.cookies) return 'You must acknowledge essential cookie use.'
     return null
   }
 
@@ -64,8 +60,7 @@ export default function Register() {
       })
 
       const normalizedEmail = form.email.trim().toLowerCase()
-      // Record all consent types permanently in parallel
-      await Promise.allSettled([
+      const consentCalls = [
         api.post('/auth/consent', {
           consent_type: 'register_terms',
           accepted: true,
@@ -78,7 +73,18 @@ export default function Register() {
           terms_version: TERMS_VERSION,
           email: normalizedEmail,
         }),
-      ])
+      ]
+      if (consent.marketing) {
+        consentCalls.push(
+          api.post('/auth/consent', {
+            consent_type: 'marketing_communications',
+            accepted: true,
+            terms_version: TERMS_VERSION,
+            email: normalizedEmail,
+          })
+        )
+      }
+      await Promise.allSettled(consentCalls)
 
       setSuccess(true)
     } catch (err) {
@@ -105,10 +111,6 @@ export default function Register() {
             We've sent a verification link to{' '}
             <span className="text-brand-text font-medium">{form.email}</span>.
             Click it to activate your account.
-          </p>
-          <p className="text-xs text-brand-muted border border-brand-border rounded-lg px-4 py-3 text-left">
-            Your consent has been recorded as a tamper-evident record under the DPDP Act, 2023.
-            ThreatShot stores only your email address — no name or other personal data was collected.
           </p>
           <button
             onClick={() => navigate('/login')}
@@ -138,7 +140,7 @@ export default function Register() {
 
       {/* Form */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-sm space-y-6">
+        <div className="w-full max-w-sm space-y-5">
 
           <div>
             <h1 className="text-2xl font-bold text-brand-text">Create account</h1>
@@ -148,78 +150,8 @@ export default function Register() {
             </p>
           </div>
 
-          {/* ── Purpose Disclosure ── */}
-          <div className="border border-brand-border rounded-lg overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setShowPurpose(v => !v)}
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-brand-surface/50 transition-colors"
-            >
-              <span className="text-xs font-semibold text-brand-text uppercase tracking-wide">
-                Why we collect your data
-              </span>
-              {showPurpose
-                ? <ChevronUp className="w-4 h-4 text-brand-muted shrink-0" />
-                : <ChevronDown className="w-4 h-4 text-brand-muted shrink-0" />}
-            </button>
-            {showPurpose && (
-              <div className="px-4 pb-4 text-xs text-brand-muted space-y-2 border-t border-brand-border">
-                <p className="pt-3">
-                  ThreatShot collects <strong className="text-brand-text">only your email address</strong>.
-                  We do not collect your name, phone number, location, or any other personal data.
-                </p>
-                <p>Your email is used exclusively for:</p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>Account authentication and password recovery</li>
-                  <li>Security alerts directly related to your account</li>
-                  <li>Email verification to prevent account abuse</li>
-                </ul>
-                <p>
-                  We do not use your email for marketing, advertising, or share it with
-                  third parties. Your password is hashed using bcrypt before storage —
-                  we never store it in plaintext.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* ── Disclaimer ── */}
-          <div className="border border-brand-border rounded-lg overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setShowDisclaimer(v => !v)}
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-brand-surface/50 transition-colors"
-            >
-              <span className="text-xs font-semibold text-brand-text uppercase tracking-wide">
-                Disclaimer
-              </span>
-              {showDisclaimer
-                ? <ChevronUp className="w-4 h-4 text-brand-muted shrink-0" />
-                : <ChevronDown className="w-4 h-4 text-brand-muted shrink-0" />}
-            </button>
-            {showDisclaimer && (
-              <div className="px-4 pb-4 text-xs text-brand-muted space-y-2 border-t border-brand-border">
-                <p className="pt-3">
-                  ThreatShot aggregates threat intelligence from public sources (CERT-IN, CISA,
-                  NVD, and others) for <strong className="text-brand-text">defensive and informational purposes only</strong>.
-                </p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>Data may not be complete, real-time, or free from errors.</li>
-                  <li>ThreatShot is not liable for decisions made based on this information.</li>
-                  <li>This platform must not be used to conduct offensive security operations.</li>
-                  <li>Misuse violates our Acceptable Use Policy and may result in account termination.</li>
-                </ul>
-                <p>
-                  MSInfo Services Pvt. Ltd. operates ThreatShot and is subject to Indian law,
-                  including the IT Act 2000 and DPDP Act 2023.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* ── Registration Form ── */}
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            {/* Email — the only personal data we collect */}
+            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-xs font-medium text-brand-muted mb-1.5">
                 Email address <span className="text-red-500">*</span>
@@ -236,7 +168,7 @@ export default function Register() {
                 className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2.5 text-sm text-brand-text placeholder-brand-muted focus:outline-none focus:border-brand-accent transition-colors"
               />
               <p className="text-xs text-brand-muted mt-1">
-                This is the only personal data ThreatShot collects.
+                Used for account access and security alerts only.
               </p>
             </div>
 
@@ -274,19 +206,55 @@ export default function Register() {
               )}
             </div>
 
+            {/* ── Collapsibles ── */}
+            <div className="space-y-2">
+              <Collapsible
+                label="Why we collect your email"
+                open={showPurpose}
+                onToggle={() => setShowPurpose(v => !v)}
+              >
+                <p>
+                  ThreatShot collects <strong className="text-brand-text">only your email address</strong> — no name, phone, or location data.
+                  Your email is used for:
+                </p>
+                <ul className="list-disc pl-4 space-y-1 mt-1">
+                  <li>Account login and password recovery</li>
+                  <li>Security alerts related to your account</li>
+                  <li>Email verification to prevent abuse</li>
+                </ul>
+                <p className="mt-1">
+                  Your password is hashed with bcrypt before storage and is never accessible to anyone, including our team.
+                </p>
+              </Collapsible>
+
+              <Collapsible
+                label="Disclaimer"
+                open={showDisclaimer}
+                onToggle={() => setShowDisclaimer(v => !v)}
+              >
+                <p>
+                  ThreatShot aggregates threat intelligence from public sources (CERT-IN, CISA, NVD, and others)
+                  for <strong className="text-brand-text">defensive and informational purposes only</strong>.
+                </p>
+                <ul className="list-disc pl-4 space-y-1 mt-1">
+                  <li>Data may not be complete, real-time, or error-free.</li>
+                  <li>ThreatShot is not liable for decisions made based on this information.</li>
+                  <li>This platform must not be used for offensive security operations.</li>
+                  <li>Misuse violates our Acceptable Use Policy and may result in account termination.</li>
+                </ul>
+              </Collapsible>
+            </div>
+
             {/* ── Consent Checkboxes ── */}
             <div className="space-y-3 pt-1">
-              <p className="text-xs font-semibold text-brand-text uppercase tracking-wide">
-                Required consents
-              </p>
-
-              {/* 1. Terms + Privacy + AUP */}
+              {/* 1. Terms */}
               <ConsentCheck
                 checked={consent.terms}
                 onChange={() => toggleConsent('terms')}
+                required
                 label={
                   <>
-                    I have read and agree to ThreatShot's{' '}
+                    I agree to ThreatShot's{' '}
                     <PolicyLink to="/terms-and-conditions">Terms of Service</PolicyLink>,{' '}
                     <PolicyLink to="/privacy">Privacy Policy</PolicyLink>, and{' '}
                     <PolicyLink to="/aup">Acceptable Use Policy</PolicyLink>.
@@ -294,32 +262,26 @@ export default function Register() {
                 }
               />
 
-              {/* 2. Data purpose */}
-              <ConsentCheck
-                checked={consent.dataPurpose}
-                onChange={() => toggleConsent('dataPurpose')}
-                label="I understand ThreatShot collects only my email address for authentication and account security. No other personal data is collected."
-              />
-
-              {/* 3. Cookie & metadata consent */}
+              {/* 2. Cookies */}
               <ConsentCheck
                 checked={consent.cookies}
                 onChange={() => toggleConsent('cookies')}
+                required
                 label={
                   <>
-                    I acknowledge that ThreatShot uses essential cookies for authentication,
-                    and that my IP address, timestamp, and browser metadata are recorded with
-                    each consent event. See our{' '}
-                    <PolicyLink to="/cookies">Cookie Policy</PolicyLink> for details.
+                    I accept essential cookies used for authentication (session token, CSRF protection) and
+                    preference storage (theme). See our{' '}
+                    <PolicyLink to="/cookies">Cookie Policy</PolicyLink> for the full list.
                   </>
                 }
               />
 
-              {/* 4. DPDP explicit consent */}
+              {/* 3. Marketing — optional */}
               <ConsentCheck
-                checked={consent.dpdp}
-                onChange={() => toggleConsent('dpdp')}
-                label="I give explicit consent to ThreatShot (MSInfo Services Pvt. Ltd.) to process my email address for the stated purposes under the Digital Personal Data Protection Act, 2023. I understand I may withdraw consent by deleting my account."
+                checked={consent.marketing}
+                onChange={() => toggleConsent('marketing')}
+                optional
+                label="I'd like to receive threat intelligence updates, security advisories, and product news from ThreatShot. (Optional — you can unsubscribe at any time.)"
               />
             </div>
 
@@ -333,7 +295,7 @@ export default function Register() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading || !allConsented}
+              disabled={isLoading || !requiredConsented}
               className="w-full flex items-center justify-center gap-2 bg-brand-accent hover:bg-brand-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors mt-2"
             >
               {isLoading ? (
@@ -344,19 +306,56 @@ export default function Register() {
             </button>
           </form>
 
-          <p className="text-xs text-brand-muted text-center">
-            Your consent is recorded as a tamper-evident, permanent ledger entry with your
-            IP address and timestamp under the DPDP Act, 2023.
-          </p>
+          {/* Footer links */}
+          <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center">
+            {[
+              { to: '/privacy', label: 'Privacy Policy' },
+              { to: '/terms-and-conditions', label: 'Terms' },
+              { to: '/cookies', label: 'Cookie Policy' },
+            ].map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-brand-muted hover:text-brand-accent transition-colors"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+
         </div>
       </div>
     </div>
   )
 }
 
-/* ── Shared sub-components ── */
+/* ── Sub-components ── */
 
-function ConsentCheck({ checked, onChange, label }) {
+function Collapsible({ label, open, onToggle, children }) {
+  return (
+    <div className="border border-brand-border rounded-lg overflow-hidden">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-brand-surface/50 transition-colors"
+      >
+        <span className="text-xs font-semibold text-brand-text uppercase tracking-wide">{label}</span>
+        {open
+          ? <ChevronUp className="w-4 h-4 text-brand-muted shrink-0" />
+          : <ChevronDown className="w-4 h-4 text-brand-muted shrink-0" />}
+      </button>
+      {open && (
+        <div className="px-4 pb-4 text-xs text-brand-muted space-y-2 border-t border-brand-border pt-3">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ConsentCheck({ checked, onChange, label, required, optional }) {
   return (
     <label className="flex items-start gap-3 cursor-pointer group">
       <div className="relative mt-0.5 shrink-0">
@@ -376,7 +375,9 @@ function ConsentCheck({ checked, onChange, label }) {
         </div>
       </div>
       <span className="text-xs text-brand-muted leading-relaxed">
-        {label} <span className="text-red-500">*</span>
+        {label}{' '}
+        {required && <span className="text-red-500">*</span>}
+        {optional && <span className="text-brand-muted/60">(optional)</span>}
       </span>
     </label>
   )

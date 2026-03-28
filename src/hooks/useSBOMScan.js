@@ -56,6 +56,8 @@ function removeActiveScan(scanId) {
   localStorage.setItem(LS_KEY, JSON.stringify(all))
 }
 
+export { removeActiveScan }
+
 export function getActiveScans() {
   const all = loadActiveScans()
   // Prune entries older than 2 hours (likely stale)
@@ -105,7 +107,9 @@ export default function useSBOMScan(scanId, {
       const { data } = await api.get(`/sbom/scan/${scanId}`)
       return data.scan
     } catch (e) {
-      throw new Error(e.response?.data?.detail || 'Failed to load scan.')
+      const err = new Error(e.response?.data?.detail || 'Failed to load scan.')
+      err.status = e.response?.status
+      throw err
     }
   }, [scanId])
 
@@ -162,8 +166,13 @@ export default function useSBOMScan(scanId, {
 
       timerRef.current = setTimeout(poll, pollInterval)
     } catch (e) {
+      // Scan not found — remove from localStorage so banner stops polling it
+      if (e.status === 404) {
+        removeActiveScan(scanId)
+      }
       setError(e.message)
       setLoading(false)
+      // no setTimeout — polling stops here
     }
   }, [fetchScan, scanId, pollInterval, maxAttempts, estimateTimeRemaining, onComplete, onFailed])
 

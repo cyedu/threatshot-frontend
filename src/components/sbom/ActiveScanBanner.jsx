@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Loader2, CheckCircle2, AlertTriangle, X } from 'lucide-react'
-import { getActiveScans } from '../../hooks/useSBOMScan'
+import { getActiveScans, removeActiveScan } from '../../hooks/useSBOMScan'
 import api from '../../lib/api'
 
 const POLL_MS    = 4000
@@ -32,7 +32,7 @@ export default function ActiveScanBanner() {
         return
       }
 
-      const updated = await Promise.all(
+      const results = await Promise.all(
         active.map(async (a) => {
           pollCountRef.current[a.scanId] = (pollCountRef.current[a.scanId] || 0) + 1
           // Hit limit — mark timed out so banner can show and user can dismiss
@@ -48,11 +48,17 @@ export default function ActiveScanBanner() {
               status:   s.status,
               progress: s.progress ?? a.progress ?? 0,
             }
-          } catch {
-            return a
+          } catch (err) {
+            // Scan not found — remove from localStorage and drop from banner
+            if (err.response?.status === 404) {
+              removeActiveScan(a.scanId)
+              return null
+            }
+            return a  // network blip — keep entry, retry next cycle
           }
         })
       )
+      const updated = results.filter(Boolean)
 
       setScans(updated)
       const stillActive = updated.filter(s => s.status === 'pending' || s.status === 'processing')

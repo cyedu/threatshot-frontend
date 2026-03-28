@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import PageWrapper from '../../components/layout/PageWrapper'
 import { Card, Button, Spinner, Alert, Progress } from '../../components/ui'
+import SignupPromptModal from '../../components/SignupPromptModal'
 import ScanProgress from '../../components/ScanProgress'
 import useScanStore from '../../store/scanStore'
 import api from '../../lib/api'
@@ -503,7 +504,10 @@ function HistoryRow({ scan }) {
 // ─── Org download bar ──────────────────────────────────────────────────────
 function OrgDownloadBar() {
   const [loading, setLoading] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const loggedIn = !!localStorage.getItem('access_token')
   const download = async (endpoint, format, filename) => {
+    if (!loggedIn) { setShowModal(true); return }
     setLoading(endpoint+format)
     try {
       const res = await api.get(`${endpoint}?format=${format}&days=30`, { responseType:'blob' })
@@ -557,6 +561,7 @@ function OrgDownloadBar() {
           </button>
         </div>
       </div>
+      <SignupPromptModal isOpen={showModal} onClose={() => setShowModal(false)} feature="download IOC reports" />
     </div>
   )
 }

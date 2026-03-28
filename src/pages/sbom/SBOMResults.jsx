@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Shield, ShieldAlert, ShieldX, AlertTriangle,
   Package, ExternalLink, ChevronDown, ChevronUp,
-  Flame, Activity, Clock, StopCircle
+  Flame, Activity, Clock, StopCircle, Download
 } from 'lucide-react'
 import PageWrapper from '../../components/layout/PageWrapper'
 import { Card, Badge, Button, Spinner } from '../../components/ui'
 import ScanProgressCard from '../../components/sbom/ScanProgressCard'
+import SignupPromptModal from '../../components/SignupPromptModal'
 import useSBOMScan from '../../hooks/useSBOMScan'
 import api from '../../lib/api'
 
@@ -340,6 +341,51 @@ export default function SBOMResults() {
   const isFailed     = timedOut || scan?.status === 'failed'
   const isComplete   = scan?.status === 'complete'
 
+  const [showSignupModal, setShowSignupModal] = useState(false)
+  const [csvLoading, setCsvLoading] = useState(false)
+
+  const handleDownloadCsv = async () => {
+    if (!localStorage.getItem('access_token')) {
+      setShowSignupModal(true)
+      return
+    }
+    setCsvLoading(true)
+    try {
+      // Fetch all results (up to 1000) for CSV export
+      const { data } = await api.get(`/sbom/scan/${scanId}/results`, {
+        params: { page: 1, page_size: 1000 },
+      })
+      const rows = data.results || []
+      if (!rows.length) return
+
+      const headers = ['CVE ID', 'Component', 'Version', 'Severity', 'CVSS Score', 'EPSS %', 'KEV', 'Description']
+      const lines = [
+        headers.join(','),
+        ...rows.map(r => [
+          r.cve_id || '',
+          `"${(r.component_name || '').replace(/"/g, '""')}"`,
+          r.component_version || '',
+          r.cvss_v3_severity || '',
+          r.cvss_v3_score ?? '',
+          r.epss_percentile != null ? (r.epss_percentile * 100).toFixed(1) : '',
+          r.is_kev ? 'Yes' : 'No',
+          `"${(r.description || '').replace(/"/g, '""').slice(0, 200)}"`,
+        ].join(',')),
+      ]
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href     = url
+      a.download = `sbom-scan-${scanId.slice(0, 8)}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      // silently fail
+    } finally {
+      setCsvLoading(false)
+    }
+  }
+
   // ── Loading splash ──────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -468,7 +514,16 @@ export default function SBOMResults() {
 
             <ResultsPanel scanId={scanId} />
 
-            <div className="pt-2 flex justify-center">
+            <div className="pt-2 flex flex-wrap justify-center gap-3">
+              <Button
+                variant="secondary"
+                onClick={handleDownloadCsv}
+                disabled={csvLoading}
+                className="flex items-center gap-1.5 text-xs py-1.5 px-3"
+              >
+                {csvLoading ? <Spinner className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                Export CSV
+              </Button>
               <Button variant="secondary" onClick={() => navigate('/sbom')} className="text-xs">
                 <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Scan another file
               </Button>
@@ -477,6 +532,12 @@ export default function SBOMResults() {
         )}
 
       </div>
+
+      <SignupPromptModal
+        isOpen={showSignupModal}
+        onClose={() => setShowSignupModal(false)}
+        feature="download SBOM reports"
+      />
     </PageWrapper>
   )
 }

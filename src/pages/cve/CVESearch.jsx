@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import PageWrapper from '../../components/layout/PageWrapper'
 import { Card, Badge, Spinner, Input, Button, Textarea, Alert } from '../../components/ui'
+import SignupPromptModal from '../../components/SignupPromptModal'
 import api from '../../lib/api'
 import { cn } from '../../lib/utils'
 import { useSEO } from '../../hooks/useSEO'
@@ -639,6 +640,7 @@ export default function CVESearch() {
   const [versionInput, setVersionInput] = useState('')
   const [downloadFormat, setDownloadFormat] = useState('csv')
   const [downloadError, setDownloadError] = useState(null)
+  const [showSignupModal, setShowSignupModal] = useState(false)
   const loggedIn = isLoggedIn()
 
   useSEO({
@@ -761,7 +763,7 @@ export default function CVESearch() {
 
   const handleDownload = async () => {
     if (!loggedIn) {
-      setDownloadError('Please log in to download CVE data.')
+      setShowSignupModal(true)
       return
     }
     setDownloadError(null)
@@ -1068,6 +1070,12 @@ export default function CVESearch() {
           </div>
         )}
       </div>
+
+      <SignupPromptModal
+        isOpen={showSignupModal}
+        onClose={() => setShowSignupModal(false)}
+        feature="download CVE reports"
+      />
     </PageWrapper>
   )
 }

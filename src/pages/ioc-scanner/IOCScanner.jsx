@@ -585,9 +585,13 @@ export default function IOCScanner() {
     staleTime: 30_000,
   })
 
+  const [showScanModal, setShowScanModal] = useState(false)
+  const isLoggedIn = !!localStorage.getItem('access_token')
+
   const handleScan = async (e) => {
     e.preventDefault()
     const ioc = iocInput.trim(); if(!ioc) return
+    if (!isLoggedIn) { setShowScanModal(true); return }
     setLoading(true); setError(null); setResult(null)
     try {
       const res = await api.post('/ioc/lookup', { ioc, source })
@@ -599,6 +603,7 @@ export default function IOCScanner() {
   }
 
   const handlePasteScan = async () => {
+    if (!isLoggedIn) { setShowScanModal(true); return }
     const iocs = pasteInput.split('\n').map(l=>l.trim()).filter(Boolean)
     if(!iocs.length) return
     const res = await api.post('/ioc/bulk-text', { iocs, source })
@@ -607,6 +612,7 @@ export default function IOCScanner() {
   }
 
   const onDrop = useCallback(async (files) => {
+    if (!isLoggedIn) { setShowScanModal(true); return }
     if(!files[0]) return; reset()
     const fd = new FormData(); fd.append('file', files[0])
     try {
@@ -615,7 +621,7 @@ export default function IOCScanner() {
       })
       setJob(res.data.job_id)
     } catch(err) { setError(err.response?.data?.detail||'Upload failed.') }
-  }, [reset, setJob, source])
+  }, [reset, setJob, source, isLoggedIn])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -763,6 +769,12 @@ export default function IOCScanner() {
           </Card>
         )}
       </div>
+
+      <SignupPromptModal
+        isOpen={showScanModal}
+        onClose={() => setShowScanModal(false)}
+        feature="scan IOCs"
+      />
     </PageWrapper>
   )
 }

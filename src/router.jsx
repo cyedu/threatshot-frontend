@@ -67,6 +67,7 @@ export const router = createBrowserRouter([
   { path: '/blog/:slug', element: <BlogPost /> },
   { path: '/sbom', element: <SBOMScanner /> },
   { path: '/sbom/scan/:scanId', element: <SBOMResults /> },
+  { path: '/ioc-scanner', element: <IOCScanner /> },
 
   // Legal pages
   { path: '/privacy', element: <PrivacyPolicy /> },
@@ -96,7 +97,6 @@ export const router = createBrowserRouter([
     element: <RequireAuth />,
     children: [
       { path: '/dashboard', element: <Dashboard /> },
-      { path: '/ioc-scanner', element: <IOCScanner /> },
       { path: '/admin/blog', element: <BlogAdmin /> },
       { path: '/admin/blog/new', element: <BlogEditor /> },
       { path: '/admin/blog/:id/edit', element: <BlogEditor /> },

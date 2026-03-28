@@ -16,14 +16,15 @@ export default function Register() {
   const [showPurpose, setShowPurpose] = useState(false)
   const [showDisclaimer, setShowDisclaimer] = useState(false)
 
-  // Three separate consent checkboxes
+  // Four separate consent checkboxes
   const [consent, setConsent] = useState({
     terms: false,       // Terms + Privacy + AUP
     dataPurpose: false, // Minimal data collection acknowledgment
+    cookies: false,     // Essential cookies + IP/metadata collection
     dpdp: false,        // DPDP Act 2023 explicit consent
   })
 
-  const allConsented = consent.terms && consent.dataPurpose && consent.dpdp
+  const allConsented = consent.terms && consent.dataPurpose && consent.cookies && consent.dpdp
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -42,6 +43,7 @@ export default function Register() {
     if (form.password.length < 10) return 'Password must be at least 10 characters.'
     if (!consent.terms) return 'You must accept the Terms of Service, Privacy Policy, and Acceptable Use Policy.'
     if (!consent.dataPurpose) return 'You must acknowledge how your data is used.'
+    if (!consent.cookies) return 'You must acknowledge essential cookie and metadata collection.'
     if (!consent.dpdp) return 'You must provide explicit consent under the DPDP Act, 2023.'
     return null
   }
@@ -61,13 +63,22 @@ export default function Register() {
         terms_accepted: true,
       })
 
-      // Record consent permanently — fire and await for UX confirmation
-      await api.post('/auth/consent', {
-        consent_type: 'register_terms',
-        accepted: true,
-        terms_version: TERMS_VERSION,
-        email: form.email.trim().toLowerCase(),
-      })
+      const normalizedEmail = form.email.trim().toLowerCase()
+      // Record all consent types permanently in parallel
+      await Promise.allSettled([
+        api.post('/auth/consent', {
+          consent_type: 'register_terms',
+          accepted: true,
+          terms_version: TERMS_VERSION,
+          email: normalizedEmail,
+        }),
+        api.post('/auth/consent', {
+          consent_type: 'cookie_essential',
+          accepted: true,
+          terms_version: TERMS_VERSION,
+          email: normalizedEmail,
+        }),
+      ])
 
       setSuccess(true)
     } catch (err) {
@@ -290,7 +301,21 @@ export default function Register() {
                 label="I understand ThreatShot collects only my email address for authentication and account security. No other personal data is collected."
               />
 
-              {/* 3. DPDP explicit consent */}
+              {/* 3. Cookie & metadata consent */}
+              <ConsentCheck
+                checked={consent.cookies}
+                onChange={() => toggleConsent('cookies')}
+                label={
+                  <>
+                    I acknowledge that ThreatShot uses essential cookies for authentication,
+                    and that my IP address, timestamp, and browser metadata are recorded with
+                    each consent event. See our{' '}
+                    <PolicyLink to="/cookies">Cookie Policy</PolicyLink> for details.
+                  </>
+                }
+              />
+
+              {/* 4. DPDP explicit consent */}
               <ConsentCheck
                 checked={consent.dpdp}
                 onChange={() => toggleConsent('dpdp')}

@@ -21,9 +21,12 @@ import BlogEditor from './pages/admin/blog/BlogEditor'
 
 import NotFound from './pages/NotFound'
 
+// SBOM Scanner
+import SBOMScanner from './pages/sbom/SBOMScanner'
+import SBOMResults from './pages/sbom/SBOMResults'
+
 // Coming soon
 import DNSEmailSecurity from './pages/coming-soon/DNSEmailSecurity'
-import SBOMScanner from './pages/coming-soon/SBOMScanner'
 import NetworkScan from './pages/coming-soon/NetworkScan'
 import AIPentest from './pages/coming-soon/AIPentest'
 import VendorScorecard from './pages/coming-soon/VendorScorecard'
@@ -62,6 +65,8 @@ export const router = createBrowserRouter([
   { path: '/threat-feed', element: <ThreatFeed /> },
   { path: '/blog', element: <BlogList /> },
   { path: '/blog/:slug', element: <BlogPost /> },
+  { path: '/sbom', element: <SBOMScanner /> },
+  { path: '/sbom/scan/:scanId', element: <SBOMResults /> },
 
   // Legal pages
   { path: '/privacy', element: <PrivacyPolicy /> },
@@ -96,7 +101,6 @@ export const router = createBrowserRouter([
       { path: '/admin/blog/new', element: <BlogEditor /> },
       { path: '/admin/blog/:id/edit', element: <BlogEditor /> },
       { path: '/dns-email', element: <DNSEmailSecurity /> },
-      { path: '/sbom', element: <SBOMScanner /> },
       { path: '/network-scan', element: <NetworkScan /> },
       { path: '/ai-pentest', element: <AIPentest /> },
       { path: '/vendor-scorecard', element: <VendorScorecard /> },

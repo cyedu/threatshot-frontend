@@ -4,22 +4,62 @@
   which breaks CSS variable cascade on [data-theme] selectors in dev.
 */
 
-/* Dark theme — default */
+/* Light theme — default (Tailwind baseline; dark: variants override when data-theme="dark") */
 :root {
-  --brand-bg:      13 17 23;
-  --brand-surface: 22 27 34;
-  --brand-border:  48 54 61;
-  --brand-text:    230 237 243;
-  --brand-muted:   139 148 158;
-}
-
-/* Light theme — applied when data-theme="light" is on <html> */
-[data-theme="light"] {
   --brand-bg:      246 248 250;
   --brand-surface: 255 255 255;
   --brand-border:  208 215 222;
   --brand-text:    31 35 40;
   --brand-muted:   101 109 118;
+
+  /* Severity semantic tokens — light */
+  --sev-critical-bg:     254 226 226;   /* red-100   */
+  --sev-critical-border: 252 165 165;   /* red-300   */
+  --sev-critical-text:   185 28  28;    /* red-700   */
+  --sev-high-bg:         255 237 213;   /* orange-100 */
+  --sev-high-border:     253 186 116;   /* orange-300 */
+  --sev-high-text:       194 65  12;    /* orange-700 */
+  --sev-medium-bg:       254 249 195;   /* yellow-100 */
+  --sev-medium-border:   253 224 71;    /* yellow-300 */
+  --sev-medium-text:     161 98  7;     /* yellow-700 */
+  --sev-low-bg:          219 234 254;   /* blue-100   */
+  --sev-low-border:      147 197 253;   /* blue-300   */
+  --sev-low-text:        29  78  216;   /* blue-700   */
+  --sev-clean-bg:        220 252 231;   /* green-100  */
+  --sev-clean-border:    134 239 172;   /* green-300  */
+  --sev-clean-text:      21  128 61;    /* green-700  */
+  --sev-kev-bg:          254 226 226;
+  --sev-kev-border:      252 165 165;
+  --sev-kev-text:        185 28  28;
+}
+
+/* Dark theme — applied when data-theme="dark" is on <html> */
+[data-theme="dark"] {
+  --brand-bg:      13 17 23;
+  --brand-surface: 22 27 34;
+  --brand-border:  48 54 61;
+  --brand-text:    230 237 243;
+  --brand-muted:   139 148 158;
+
+  /* Severity semantic tokens — dark */
+  --sev-critical-bg:     127 29  29;    /* red-900   */
+  --sev-critical-border: 153 27  27;    /* red-800   */
+  --sev-critical-text:   252 165 165;   /* red-300   */
+  --sev-high-bg:         124 45  18;    /* orange-900 */
+  --sev-high-border:     154 52  18;    /* orange-800 */
+  --sev-high-text:       253 186 116;   /* orange-300 */
+  --sev-medium-bg:       113 63  18;    /* yellow-900 */
+  --sev-medium-border:   133 77  14;    /* yellow-800 */
+  --sev-medium-text:     253 224 71;    /* yellow-300 */
+  --sev-low-bg:          23  37  84;    /* blue-900   */
+  --sev-low-border:      30  58  138;   /* blue-800   */
+  --sev-low-text:        147 197 253;   /* blue-300   */
+  --sev-clean-bg:        20  83  45;    /* green-900  */
+  --sev-clean-border:    22  101 52;    /* green-800  */
+  --sev-clean-text:      134 239 172;   /* green-300  */
+  --sev-kev-bg:          127 29  29;
+  --sev-kev-border:      153 27  27;
+  --sev-kev-text:        252 165 165;
 }
 
 @tailwind base;

@@ -38,13 +38,13 @@ export function Card({ children, className, ...props }) {
   )
 }
 
-// Badge
+// Badge — uses CSS-var-backed sev-* tokens, adapts to light + dark automatically
 const SEVERITY_CLASSES = {
-  critical: 'bg-red-900/40 border-red-700 text-red-300',
-  high:     'bg-orange-900/40 border-orange-700 text-orange-300',
-  medium:   'bg-yellow-900/40 border-yellow-700 text-yellow-300',
-  low:      'bg-blue-900/40 border-blue-700 text-blue-300',
-  clean:    'bg-green-900/40 border-green-700 text-green-300',
+  critical: 'bg-sev-critical-bg border-sev-critical-border text-sev-critical-text',
+  high:     'bg-sev-high-bg     border-sev-high-border     text-sev-high-text',
+  medium:   'bg-sev-medium-bg   border-sev-medium-border   text-sev-medium-text',
+  low:      'bg-sev-low-bg      border-sev-low-border      text-sev-low-text',
+  clean:    'bg-sev-clean-bg    border-sev-clean-border    text-sev-clean-text',
 }
 
 export function Badge({ children, variant, className, ...props }) {

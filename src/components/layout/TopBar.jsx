@@ -2,6 +2,7 @@ import { LogOut, User, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
 import ThemeToggle from '../ThemeToggle'
+import ActiveScanBanner from '../sbom/ActiveScanBanner'
 
 export default function TopBar({ title }) {
   const { user, logout } = useAuthStore()
@@ -32,6 +33,7 @@ export default function TopBar({ title }) {
       </div>
 
       <div className="flex items-center gap-2">
+        <ActiveScanBanner />
         <ThemeToggle />
 
         {user && (

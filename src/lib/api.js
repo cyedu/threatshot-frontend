@@ -6,11 +6,24 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// ── Request interceptor — attach access token ─────────────────────────────
+// ── Anon ID helper — stable UUID per browser, cleared on login ───────────
+export function getAnonId() {
+  let id = localStorage.getItem('anon_id')
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('anon_id', id)
+  }
+  return id
+}
+
+// ── Request interceptor — attach access token + anon ID ──────────────────
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  } else {
+    // Anonymous request — send browser UUID for rate-limiting
+    config.headers['X-Anon-Id'] = getAnonId()
   }
   return config
 })

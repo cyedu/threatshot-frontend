@@ -6,18 +6,20 @@
  * Disappears automatically when the scan completes or fails.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Loader2, CheckCircle2, AlertTriangle, X } from 'lucide-react'
 import { getActiveScans } from '../../hooks/useSBOMScan'
 import api from '../../lib/api'
 
-const POLL_MS = 4000
+const POLL_MS    = 4000
+const MAX_POLLS  = 40   // ~2.5 min then give up
 
 export default function ActiveScanBanner() {
   const navigate = useNavigate()
   const [scans,    setScans]    = useState([])
   const [dismissed, setDismissed] = useState(new Set())
+  const pollCountRef = useRef({})   // scanId → poll count
 
   // Poll all active scans
   useEffect(() => {
@@ -32,6 +34,11 @@ export default function ActiveScanBanner() {
 
       const updated = await Promise.all(
         active.map(async (a) => {
+          pollCountRef.current[a.scanId] = (pollCountRef.current[a.scanId] || 0) + 1
+          // Hit limit — mark timed out so banner can show and user can dismiss
+          if (pollCountRef.current[a.scanId] > MAX_POLLS) {
+            return { ...a, status: 'failed', timedOut: true }
+          }
           try {
             const { data } = await api.get(`/sbom/scan/${a.scanId}`)
             const s = data.scan
@@ -47,7 +54,6 @@ export default function ActiveScanBanner() {
         })
       )
 
-      // Keep only in-flight scans in banner (complete/failed show briefly then go)
       setScans(updated)
       const stillActive = updated.filter(s => s.status === 'pending' || s.status === 'processing')
       if (stillActive.length > 0) {

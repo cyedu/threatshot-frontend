@@ -11,7 +11,7 @@
  * @param {string} scanId
  * @param {object} options
  * @param {number}  [options.pollInterval=3000]   ms between polls
- * @param {number}  [options.maxAttempts=120]      stop polling after N attempts
+ * @param {number}  [options.maxAttempts=40]       stop polling after N attempts (~2 min)
  * @param {function} [options.onComplete]          called when scan.status === 'complete'
  * @param {function} [options.onFailed]            called when scan.status === 'failed'
  *
@@ -22,8 +22,10 @@
  *   isBackground: boolean,
  *   sendToBackground: () => void,
  *   bringToForeground: () => void,
+ *   stopPolling: () => void,  // cancel polling manually
  *   error: string|null,
  *   loading: boolean,
+ *   timedOut: boolean,        // true when maxAttempts exceeded with no terminal state
  * }}
  */
 
@@ -67,7 +69,7 @@ export function getActiveScans() {
 
 export default function useSBOMScan(scanId, {
   pollInterval  = 3000,
-  maxAttempts   = 120,
+  maxAttempts   = 40,
   onComplete    = null,
   onFailed      = null,
 } = {}) {
@@ -77,11 +79,13 @@ export default function useSBOMScan(scanId, {
   const [isBackground,  setIsBackground]  = useState(false)
   const [error,         setError]         = useState(null)
   const [loading,       setLoading]       = useState(true)
+  const [timedOut,      setTimedOut]      = useState(false)
 
   const attemptsRef    = useRef(0)
   const timerRef       = useRef(null)
   const startTimeRef   = useRef(null)     // when status first became 'processing'
   const lastProgressRef = useRef(0)
+  const stoppedRef     = useRef(false)    // set true to cancel polling
 
   // ── Estimate time remaining ──────────────────────────────────────────────────
   const estimateTimeRemaining = useCallback((pct) => {
@@ -107,11 +111,12 @@ export default function useSBOMScan(scanId, {
 
   // ── Polling loop ─────────────────────────────────────────────────────────────
   const poll = useCallback(async () => {
+    if (stoppedRef.current) return
     attemptsRef.current += 1
 
     try {
       const s = await fetchScan()
-      if (!s) return
+      if (!s || stoppedRef.current) return
 
       setScan(s)
       setLoading(false)
@@ -147,10 +152,15 @@ export default function useSBOMScan(scanId, {
         return
       }
 
-      // Continue polling if not yet done and under attempt cap
-      if (attemptsRef.current < maxAttempts) {
-        timerRef.current = setTimeout(poll, pollInterval)
+      // Exceeded attempt cap — treat as timed out
+      if (attemptsRef.current >= maxAttempts) {
+        removeActiveScan(scanId)
+        setTimedOut(true)
+        setLoading(false)
+        return
       }
+
+      timerRef.current = setTimeout(poll, pollInterval)
     } catch (e) {
       setError(e.message)
       setLoading(false)
@@ -162,8 +172,13 @@ export default function useSBOMScan(scanId, {
     if (!scanId) return
     attemptsRef.current = 0
     startTimeRef.current = null
+    stoppedRef.current = false
+    setTimedOut(false)
     poll()
-    return () => clearTimeout(timerRef.current)
+    return () => {
+      stoppedRef.current = true
+      clearTimeout(timerRef.current)
+    }
   }, [scanId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Background mode controls ─────────────────────────────────────────────────
@@ -176,6 +191,15 @@ export default function useSBOMScan(scanId, {
     setIsBackground(false)
   }, [])
 
+  // ── Manual cancel ────────────────────────────────────────────────────────────
+  const stopPolling = useCallback(() => {
+    stoppedRef.current = true
+    clearTimeout(timerRef.current)
+    removeActiveScan(scanId)
+    setTimedOut(true)
+    setLoading(false)
+  }, [scanId])
+
   return {
     scan,
     progress,
@@ -183,7 +207,9 @@ export default function useSBOMScan(scanId, {
     isBackground,
     sendToBackground,
     bringToForeground,
+    stopPolling,
     error,
     loading,
+    timedOut,
   }
 }

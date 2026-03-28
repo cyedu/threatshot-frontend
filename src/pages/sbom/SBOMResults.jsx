@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Shield, ShieldAlert, ShieldX, AlertTriangle,
   Package, ExternalLink, ChevronDown, ChevronUp,
-  Flame, Activity, Clock
+  Flame, Activity, Clock, StopCircle
 } from 'lucide-react'
 import PageWrapper from '../../components/layout/PageWrapper'
 import { Card, Badge, Button, Spinner } from '../../components/ui'
@@ -328,14 +328,16 @@ export default function SBOMResults() {
     progress,
     timeRemaining,
     sendToBackground,
+    stopPolling,
     error,
     loading,
+    timedOut,
   } = useSBOMScan(scanId, {
     onComplete: () => {},   // results panel self-fetches via its own useEffect
   })
 
-  const isProcessing = scan?.status === 'pending' || scan?.status === 'processing'
-  const isFailed     = scan?.status === 'failed'
+  const isProcessing = !timedOut && (scan?.status === 'pending' || scan?.status === 'processing')
+  const isFailed     = timedOut || scan?.status === 'failed'
   const isComplete   = scan?.status === 'complete'
 
   // ── Loading splash ──────────────────────────────────────────────────────────
@@ -387,19 +389,30 @@ export default function SBOMResults() {
 
         {/* ── Progress card (pending / processing) ──────────────────────── */}
         {(isProcessing || isFailed) && (
-          <ScanProgressCard
-            filename={scan?.original_filename || 'SBOM file'}
-            status={scan?.status}
-            progress={progress}
-            componentCount={scan?.component_count}
-            processedCount={scan?.processed_count}
-            timeRemaining={timeRemaining}
-            errorMessage={scan?.error_message}
-            onBackground={isProcessing ? () => {
-              sendToBackground()
-              navigate('/dashboard')
-            } : null}
-          />
+          <>
+            <ScanProgressCard
+              filename={scan?.original_filename || 'SBOM file'}
+              status={timedOut ? 'failed' : scan?.status}
+              progress={progress}
+              componentCount={scan?.component_count}
+              processedCount={scan?.processed_count}
+              timeRemaining={timeRemaining}
+              errorMessage={timedOut ? 'Scan timed out — the worker may be busy. Try again.' : scan?.error_message}
+              onBackground={isProcessing ? () => {
+                sendToBackground()
+                navigate('/dashboard')
+              } : null}
+            />
+            {isProcessing && (
+              <button
+                onClick={stopPolling}
+                className="flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-danger transition-colors mx-auto"
+              >
+                <StopCircle className="w-3.5 h-3.5" />
+                Stop checking for updates
+              </button>
+            )}
+          </>
         )}
 
         {/* ── Complete: summary ──────────────────────────────────────────── */}

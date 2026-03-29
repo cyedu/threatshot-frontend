@@ -2,11 +2,11 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_BASE_URL || ''}/api/v1`,
-  withCredentials: true, // send httpOnly refresh cookie on every request
+  withCredentials: true, // send httpOnly access_token + refresh_token cookies on every request
   headers: { 'Content-Type': 'application/json' },
 })
 
-// ── Anon ID helper — stable UUID per browser, cleared on login ───────────
+// ── Anon ID helper — stable UUID per browser, used for rate-limiting anonymous requests ──
 export function getAnonId() {
   let id = localStorage.getItem('anon_id')
   if (!id) {
@@ -16,15 +16,13 @@ export function getAnonId() {
   return id
 }
 
-// ── Request interceptor — attach access token + anon ID ──────────────────
+// ── Request interceptor — attach anon ID for unauthenticated requests ────────
+// The access_token is an httpOnly cookie — the browser sends it automatically.
+// We never read or store it in JavaScript.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  } else {
-    // Anonymous request — send browser UUID for rate-limiting
-    config.headers['X-Anon-Id'] = getAnonId()
-  }
+  // Only send anon ID when no session cookie is expected (public endpoints).
+  // We can't check the httpOnly cookie from JS, so we always send it as a fallback.
+  config.headers['X-Anon-Id'] = getAnonId()
   return config
 })
 
@@ -32,8 +30,8 @@ api.interceptors.request.use((config) => {
 let isRefreshing = false
 let refreshQueue = [] // requests waiting while refresh is in flight
 
-function processQueue(error, token = null) {
-  refreshQueue.forEach((p) => (error ? p.reject(error) : p.resolve(token)))
+function processQueue(error) {
+  refreshQueue.forEach((p) => (error ? p.reject(error) : p.resolve()))
   refreshQueue = []
 }
 
@@ -55,10 +53,7 @@ api.interceptors.response.use(
       return new Promise((resolve, reject) => {
         refreshQueue.push({ resolve, reject })
       })
-        .then((token) => {
-          original.headers.Authorization = `Bearer ${token}`
-          return api(original)
-        })
+        .then(() => api(original))
         .catch(Promise.reject.bind(Promise))
     }
 
@@ -66,23 +61,14 @@ api.interceptors.response.use(
     isRefreshing = true
 
     try {
-      const { data } = await api.post('/auth/refresh')
-      const newToken = data.access_token
-      localStorage.setItem('access_token', newToken)
-      api.defaults.headers.common.Authorization = `Bearer ${newToken}`
-      processQueue(null, newToken)
-      original.headers.Authorization = `Bearer ${newToken}`
+      // Backend rotates both cookies in the response — no token handling needed here
+      await api.post('/auth/refresh')
+      processQueue(null)
       return api(original)
     } catch (refreshError) {
-      processQueue(refreshError, null)
-      const hadToken = !!localStorage.getItem('access_token')
-      localStorage.removeItem('access_token')
-      // Only redirect to login if user was previously authenticated.
-      // Anonymous users hitting 401 (e.g. rate-limited endpoints) must not
-      // be redirected — that would break the public browsing experience.
-      if (hadToken) {
-        window.location.href = '/login'
-      }
+      processQueue(refreshError)
+      // Refresh failed — session fully expired, redirect to login
+      window.location.href = '/login'
       return Promise.reject(refreshError)
     } finally {
       isRefreshing = false

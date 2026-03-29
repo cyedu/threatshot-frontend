@@ -26,6 +26,7 @@ import NotFound from './pages/NotFound'
 // SBOM Scanner
 import SBOMScanner from './pages/sbom/SBOMScanner'
 import SBOMResults from './pages/sbom/SBOMResults'
+import SBOMPricing from './pages/sbom/SBOMPricing'
 
 // Coming soon
 import DNSEmailSecurity from './pages/coming-soon/DNSEmailSecurity'
@@ -47,14 +48,18 @@ import About from './pages/company/About'
 import Contact from './pages/company/Contact'
 
 function RequireAuth() {
-  const token = localStorage.getItem('access_token')
-  if (!token) return <Navigate to="/login" replace />
+  const user = useAuthStore(state => state.user)
+  const initialized = useAuthStore(state => state.initialized)
+  if (!initialized) return null // wait for session check before redirecting
+  if (!user) return <Navigate to="/login" replace />
   return <Outlet />
 }
 
 function RedirectIfAuth() {
-  const token = localStorage.getItem('access_token')
-  if (token) return <Navigate to="/dashboard" replace />
+  const user = useAuthStore(state => state.user)
+  const initialized = useAuthStore(state => state.initialized)
+  if (!initialized) return null
+  if (user) return <Navigate to="/dashboard" replace />
   return <Outlet />
 }
 
@@ -69,6 +74,7 @@ export const router = createBrowserRouter([
   { path: '/blog/:slug', element: <BlogPost /> },
   { path: '/sbom', element: <SBOMScanner /> },
   { path: '/sbom/scan/:scanId', element: <SBOMResults /> },
+  { path: '/sbom/pricing', element: <SBOMPricing /> },
   { path: '/ioc-scanner', element: <IOCScanner /> },
 
   // Legal pages

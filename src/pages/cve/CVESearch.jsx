@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import useAuthStore from '../../store/authStore'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   Search, Shield, Zap, AlertTriangle, ChevronLeft, ChevronRight,
@@ -54,7 +55,7 @@ function formatDate(dt) {
 }
 
 function isLoggedIn() {
-  return !!localStorage.getItem('access_token')
+  return !!useAuthStore.getState().user
 }
 
 // ---------------------------------------------------------------------------
@@ -777,9 +778,9 @@ export default function CVESearch() {
       if (maxScore !== '') dlParams.set('max_score', maxScore)
       dlParams.set('format', downloadFormat)
 
-      const token = localStorage.getItem('access_token')
+      // access_token is an httpOnly cookie — sent automatically with credentials
       const response = await fetch(`/api/v1/cve/download?${dlParams}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
       })
       if (!response.ok) {
         setDownloadError('Download failed. Please try again.')

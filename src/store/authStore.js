@@ -3,19 +3,18 @@ import api from '../lib/api'
 
 const useAuthStore = create((set) => ({
   user: null,
-  token: localStorage.getItem('access_token'),
+  initialized: false, // true once the initial session check completes
   isLoading: false,
   error: null,
 
   login: async (email, password) => {
     set({ isLoading: true, error: null })
     try {
-      const { data } = await api.post('/auth/login', { email, password })
-      localStorage.setItem('access_token', data.access_token)
-      const me = await api.get('/users/me', {
-        headers: { Authorization: `Bearer ${data.access_token}` },
-      })
-      set({ user: me.data, token: data.access_token, isLoading: false })
+      // Login sets httpOnly access_token + refresh_token cookies on the response.
+      // We never store or read the token in JS — the browser sends the cookie automatically.
+      await api.post('/auth/login', { email, password })
+      const { data } = await api.get('/users/me')
+      set({ user: data, isLoading: false })
       return true
     } catch (err) {
       set({ error: err.response?.data?.detail || 'Login failed', isLoading: false })
@@ -24,18 +23,20 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    try { await api.post('/auth/logout') } catch {}
-    localStorage.removeItem('access_token')
-    set({ user: null, token: null })
+    try {
+      // Server revokes refresh token in DB and clears both httpOnly cookies
+      await api.post('/auth/logout')
+    } catch {}
+    set({ user: null })
   },
 
+  // Called once on app mount to restore session from httpOnly cookie
   fetchMe: async () => {
     try {
       const { data } = await api.get('/users/me')
-      set({ user: data })
+      set({ user: data, initialized: true })
     } catch {
-      localStorage.removeItem('access_token')
-      set({ user: null, token: null })
+      set({ user: null, initialized: true })
     }
   },
 

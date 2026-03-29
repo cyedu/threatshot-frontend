@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
+import useAuthStore from '../../store/authStore'
 import { useDropzone } from 'react-dropzone'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -505,7 +506,7 @@ function HistoryRow({ scan }) {
 function OrgDownloadBar() {
   const [loading, setLoading] = useState(null)
   const [showModal, setShowModal] = useState(false)
-  const loggedIn = !!localStorage.getItem('access_token')
+  const loggedIn = !!useAuthStore.getState().user
   const download = async (endpoint, format, filename) => {
     if (!loggedIn) { setShowModal(true); return }
     setLoading(endpoint+format)
@@ -580,7 +581,7 @@ export default function IOCScanner() {
   const qc = useQueryClient()
 
   const [showScanModal, setShowScanModal] = useState(false)
-  const isLoggedIn = !!localStorage.getItem('access_token')
+  const isLoggedIn = !!useAuthStore.getState().user
 
   const { data:history, refetch:refetchHistory } = useQuery({
     queryKey: ['ioc-history'],

@@ -8,8 +8,9 @@ export default function ScanProgress({ jobId }) {
 
   useEffect(() => {
     if (!jobId) return
-    const token = localStorage.getItem('access_token')
-    const ws = new WebSocket(`ws://localhost/api/v1/ioc/job/${jobId}/stream?token=${token}`)
+    // access_token is an httpOnly cookie — browser sends it automatically on WS handshake
+    const wsBase = window.location.origin.replace(/^http/, 'ws')
+    const ws = new WebSocket(`${wsBase}/api/v1/ioc/job/${jobId}/stream`)
     wsRef.current = ws
 
     ws.onmessage = (e) => {

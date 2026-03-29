@@ -27,8 +27,8 @@ const FEATURES = [
   {
     icon: Lock,
     title: 'SBOM Vulnerability Scan',
-    desc: 'Upload your software bill of materials and get a CVE risk report in seconds. Coming soon.',
-    href: '/login',
+    desc: 'Upload your SBOM (CycloneDX / SPDX) and get an instant CVE risk report with ransomware intel and SEBI CSCRF mapping.',
+    href: '/sbom',
   },
   {
     icon: TrendingUp,
@@ -258,7 +258,11 @@ export default function Landing() {
       {/* Pricing */}
       <section className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-16">
         <h2 className="text-2xl font-bold text-center text-brand-text mb-2">Simple, transparent pricing</h2>
-        <p className="text-center text-sm text-brand-muted mb-10">Scale from free to enterprise — no surprise charges.</p>
+        <p className="text-center text-sm text-brand-muted mb-2">Scale from free to enterprise — no surprise charges.</p>
+        <p className="text-center text-xs text-brand-muted/70 mb-10">
+          Per-module pricing — buy only what you need.{' '}
+          <a href="/sbom/pricing" className="text-brand-accent2 hover:underline">SBOM module pricing →</a>
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {PLANS.map((plan) => (
             <div

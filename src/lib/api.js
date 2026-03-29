@@ -68,10 +68,10 @@ api.interceptors.response.use(
       return api(original)
     } catch (refreshError) {
       processQueue(refreshError)
-      // Refresh failed — session fully expired; redirect to login only from protected pages
-      const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email']
-      const isPublic = publicPaths.some(p => window.location.pathname.startsWith(p))
-      if (!isPublic) {
+      // Refresh failed — redirect to login only from protected app pages
+      const protectedPaths = ['/dashboard', '/admin']
+      const isProtected = protectedPaths.some(p => window.location.pathname.startsWith(p))
+      if (isProtected) {
         window.location.href = '/login'
       }
       return Promise.reject(refreshError)

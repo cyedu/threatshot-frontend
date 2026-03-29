@@ -40,11 +40,12 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config
 
-    // Only attempt refresh on 401, skip the refresh endpoint itself
+    // Only attempt refresh on 401, skip the refresh endpoint itself and silent session checks
     if (
       error.response?.status !== 401 ||
       original._retry ||
-      original.url?.includes('/auth/refresh')
+      original.url?.includes('/auth/refresh') ||
+      original._silentAuth
     ) {
       return Promise.reject(error)
     }
@@ -67,8 +68,12 @@ api.interceptors.response.use(
       return api(original)
     } catch (refreshError) {
       processQueue(refreshError)
-      // Refresh failed — session fully expired, redirect to login
-      window.location.href = '/login'
+      // Refresh failed — session fully expired; redirect to login only from protected pages
+      const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email']
+      const isPublic = publicPaths.some(p => window.location.pathname.startsWith(p))
+      if (!isPublic) {
+        window.location.href = '/login'
+      }
       return Promise.reject(refreshError)
     } finally {
       isRefreshing = false

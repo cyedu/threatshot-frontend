@@ -33,7 +33,7 @@ const useAuthStore = create((set) => ({
   // Called once on app mount to restore session from httpOnly cookie
   fetchMe: async () => {
     try {
-      const { data } = await api.get('/users/me')
+      const { data } = await api.get('/users/me', { _silentAuth: true })
       set({ user: data, initialized: true })
     } catch {
       set({ user: null, initialized: true })

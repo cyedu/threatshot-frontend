@@ -38,7 +38,7 @@ export default function Dashboard() {
 
   const { data: feedItems } = useQuery({
     queryKey: ['feed-recent'],
-    queryFn: () => api.get('/threat-feed?limit=5&page=1').then(r => r.data),
+    queryFn: () => api.get('/threat-feed/?per_page=5&page=1').then(r => r.data),
     staleTime: 60_000,
   })
 
@@ -128,7 +128,7 @@ export default function Dashboard() {
               <div className="flex justify-center py-8"><Spinner /></div>
             ) : (
               <ul className="space-y-3">
-                {feedItems.items?.slice(0, 5).map(item => (
+                {feedItems.data?.slice(0, 5).map(item => (
                   <li key={item.id} className="flex items-start gap-3 border-b border-brand-border pb-3 last:border-0 last:pb-0">
                     <Badge variant={item.severity}>{item.severity}</Badge>
                     <div className="min-w-0">
